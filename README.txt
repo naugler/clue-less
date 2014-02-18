@@ -30,9 +30,15 @@ To build the project in NetBeans:
  6. If you are building client or server, don't forget to add the dependencies to the sources classpath, or Netbeans will complain.
  
 To build the project in Eclipse:
- 1. Download the source code.
- 2. Figure out how to build the project in Eclipse.
- 3. Update these instructions ;)
+  If a project already exists for clueless
+    1. Right-click on the project folder, and select import. 
+    2. Choose the file system under general.
+    3. The from directory should be set to one of  common, server, or client
+    4. In the into folder box, choose the clueless folder.
+    5. Check the checkbox for the project in the left panel.
+    6. You will probably be prompted that build.xml already exists or something like that.  Hit yes to overwrite.
+    7. Repeat steps 1-6 until all modules are added
+    8. Eclipse should automatically build for you
  
 ** RUNNING ****************************************
 We have included handy run scripts for both client and server, but special
