@@ -1,0 +1,5 @@
+*nbproject*
+*.class
+clueless-client/dist/clueless-client.jar
+clueless-common/dist/clueless-common.jar
+clueless-server/dist/clueless-server.jar

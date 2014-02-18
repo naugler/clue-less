@@ -1,14 +1,17 @@
 package game;
 
 import java.awt.Color;
+import java.util.ArrayList;
 
 public class Player {
 	
-	int position = -1;
+	private int position = -1;
 	
-	Person person;
+	private Person person;
 	
-	Card[] cards;
+	private ArrayList<Card> cards = new ArrayList<Card>();
+	
+	private boolean myTurn = false;
 	
 	private enum Person {
 		MUSTARD("Colonel Mustard", Color.yellow),
@@ -27,6 +30,73 @@ public class Player {
 		private String name;
 		public String getName(){return name;}
 		public Color getColor(){return color;}
+		public static Person getPerson(Color color)
+		{
+			for (Person p : Person.values())
+			{
+				if (p.color.equals( color))
+				{
+					return p;
+				}
+			}
+			return null;
+		}
+		public static Person getPerson(String name)
+		{
+			for (Person p : Person.values())
+			{
+				if (p.name == name)
+				{
+					return p;
+				}
+			}
+			return null;
+		}
 			
 	}
+	public Player( Color color )
+	{
+		person = Person.getPerson(color);
+	}
+	
+	public Player( String name )
+	{
+		person = Person.getPerson(name);
+	}
+	
+	public Person getPerson()
+	{
+		return person;
+	}
+	
+	public void dealCard(Card c)
+	{
+		cards.add(c);
+	}
+	
+	public ArrayList<Card> getCards()
+	{
+		return cards;
+	}
+	
+	public int getPosition()
+	{
+		return position;
+	}
+	
+	public void setPosition(int pos)
+	{
+		position = pos;
+	}
+	
+	public void setTurn(boolean myTurn)
+	{
+		this.myTurn = myTurn;
+	}
+	
+	public boolean getTurn()
+	{
+		return myTurn;
+	}
+	
 }

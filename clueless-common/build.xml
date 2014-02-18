@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="clueless-common" default="jar" basedir=".">
+
+    <!--load project properties-->
+    <property file="build.properties" />
+    
+    <!-- Initialization -->
+    <target name="init" description="Prepare needed directories.">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${classes.dir}" />
+        <mkdir dir="${jar.dir}" />
+    </target>
+
+    <!-- Cleanup -->
+    <target name="clean" description="Remove all files created by the build/test process.">
+        <delete dir="${classes.dir}" />
+    </target>
+
+    <!-- Compile application -->
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" 
+               destdir="${classes.dir}" 
+               debug="yes"
+               includeantruntime="false" />
+    </target>
+
+    <!-- Java Archive -->
+    <target name="jar" depends="compile">
+        <delete dir="${jar.dir}"/>
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Build-Platform" value="${os.name}"/>
+                <attribute name="Build-Author" value="${user.name}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- Run application -->
+    <target name="run" depends="jar">
+        <java jar="${jar.dir}/${ant.project.name}.jar" 
+              fork="true" />
+    </target>
+</project>
