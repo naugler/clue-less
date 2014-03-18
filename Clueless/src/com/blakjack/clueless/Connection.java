@@ -39,6 +39,7 @@ public class Connection {
     private ObjectInputStream reader = null;
     private ObjectOutputStream writer = null;
     private Thread listenerThread = null;
+    private String username = null;
     
     private final List<ConnectionEventListener> listeners 
             = new ArrayList<ConnectionEventListener>();
@@ -51,6 +52,23 @@ public class Connection {
         listenerThread = new Thread(new Runnable() {
             @Override
             public void run() {
+//                boolean needName = true;
+//                while(!Thread.interrupted() && needName) {
+                    try {
+                        Object msg = reader.readObject();
+                        System.out.println("msg: "+msg);
+                        System.out.println("msg is a "+msg.getClass().getCanonicalName());
+                        username = (String)msg;
+//                        needName = false;
+                    } catch (IOException ex) {
+                        System.err.println(ex.getMessage());
+                        close();
+                    } catch (ClassNotFoundException ex) {
+                        System.err.println(ex.getMessage());
+                        close();
+                    }
+//                }
+                
                 while(!Thread.interrupted()) {
                     try {
                         Object msg = reader.readObject();
@@ -134,12 +152,20 @@ public class Connection {
         }
     }
     
+    public Socket getSocket() {
+        return socket;
+    }
+    
     private void startDataListener() {
         listenerThread.start();
     }
     
     private void stopDataListener() {
         listenerThread.interrupt();
+    }
+    
+    public String getUsername() {
+        return username;
     }
     
     @Override

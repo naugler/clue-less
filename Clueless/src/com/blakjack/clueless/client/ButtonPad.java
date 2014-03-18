@@ -1,9 +1,14 @@
 package com.blakjack.clueless.client;
 
-public class ButtonPad {
+import javax.swing.JPanel;
+
+public class ButtonPad extends JPanel {
 //	Array of buttons size 8
 	
-	public ButtonPad(){
+	public ButtonPad() {
+            super();
+            
+            
 //		Create buttons and save them in array
 //	Left button
 //	Right button

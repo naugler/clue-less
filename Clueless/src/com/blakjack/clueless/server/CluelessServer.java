@@ -11,6 +11,8 @@ import com.blakjack.clueless.Connection.MessageHandler;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This Main class starts up a socket acceptor and handles new connections
@@ -24,7 +26,9 @@ public class CluelessServer {
     private static CluelessServer server;
     
     private Thread acceptorThread = null;
-    private final MessageHandler messageHandler = new ServerMessageHandler();
+    private Server serverthingy = new Server();
+    
+    private final Map<String, Connection> connections = new HashMap<String, Connection>();
     
     /**
      * @param args the command line arguments
@@ -60,7 +64,12 @@ public class CluelessServer {
     }
     
     private void handleConnection(Connection connection) {
-        connection.addMessageHandler(messageHandler);
+        String username = connection.getUsername();
+        if (username != null) {
+            System.out.println("adding connection from user: "+username);
+            connection.addMessageHandler(serverthingy);
+            connections.put(username, connection);
+        }
     }
     
 }

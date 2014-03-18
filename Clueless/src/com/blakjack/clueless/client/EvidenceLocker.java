@@ -1,6 +1,8 @@
 package com.blakjack.clueless.client;
 
-public class EvidenceLocker {
+import javax.swing.JTable;
+
+public class EvidenceLocker extends JTable {
 //	Array of card names (weapons, rooms, characters)
 
 //	Array of buttons (text will be x, check, or blank) for each name above

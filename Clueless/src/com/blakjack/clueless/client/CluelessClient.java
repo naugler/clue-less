@@ -9,6 +9,7 @@ package com.blakjack.clueless.client;
 import com.blakjack.clueless.Connection;
 import com.blakjack.clueless.NullMessage;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -37,7 +38,7 @@ public class CluelessClient {
         System.out.println("Starting client...");
         
         client = new CluelessClient();
-        client.connect();
+        client.connect("User 1");
     }
     
     public CluelessClient() {
@@ -60,12 +61,16 @@ public class CluelessClient {
             ex.printStackTrace(System.err);
         }
         
+        ClientFrame clientFrame = new ClientFrame();
+        clientFrame.setVisible(true);
+        
         connection = initConnection;
     }
     
-    private void connect() {
+    private void connect(String username) {
         connection.addMessageHandler(new ClientMessageHandler());
         connection.open();
+        connection.send(username);
     }
     
     private void ping() {

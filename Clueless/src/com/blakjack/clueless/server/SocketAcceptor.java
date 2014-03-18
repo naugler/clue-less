@@ -46,6 +46,7 @@ public class SocketAcceptor implements Runnable {
         }
     }
     
+    @Override
     public void run() {
         System.out.println("Accepting connections on "+serverSocket.getInetAddress().getHostAddress()+":"+serverSocket.getLocalPort()+" ...");
         while(true) {
@@ -53,8 +54,12 @@ public class SocketAcceptor implements Runnable {
                 Socket newSocket = serverSocket.accept();
                 Connection newConnection = new Connection(newSocket);
                 newConnection.open();
+                while (newConnection.getUsername() == null) {
+                    System.out.println("waiting for username...");
+                    Thread.sleep(500);
+                }
                 fireSocketAcceptorEvent(newConnection);
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 System.err.println("Failed to open connection");
                 ex.printStackTrace(System.err);
             }

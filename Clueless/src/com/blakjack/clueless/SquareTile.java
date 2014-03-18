@@ -2,7 +2,7 @@ package com.blakjack.clueless;
 
 public class SquareTile {
 	Player occupyingPlayer = null;
-	int position; 
+	int position;
 	
 	public SquareTile(int position)
 	{
