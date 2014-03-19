@@ -4,15 +4,12 @@ import com.blakjack.clueless.Card;
 
 public class Deck {
 	private final int NUM_CARDS = 21;
-	private Card[] cards = new Card[NUM_CARDS];
+	private Card[] cards;
 	private int curCard = 0;
 	
 	public Deck()
 	{
-		for (int i = 0; i < 21; i++)
-		{
-			cards = Card.values();
-		}
+		cards = Card.values();
 	}
 	
 	/**
@@ -34,9 +31,7 @@ public class Deck {
 				 * --------------------------------- Swap these randomly picked
 				 * cards ---------------------------------
 				 */
-				Card tmp = cards[i];
-				cards[i] = cards[j];
-				cards[j] = tmp;
+				swap(i,j);
 			}
 			curCard = 0;
 		}
@@ -48,6 +43,16 @@ public class Deck {
 	public void sort()
 	{
 		cards = Card.values();
+	}
+	
+	public void swap(int i, int j)
+	{
+		if ((i < NUM_CARDS && i >= 0) && (j <NUM_CARDS && j >= 0))
+		{
+			Card tmp = cards[i];
+			cards[i] = cards[j];
+			cards[j] = tmp;
+		}
 	}
 	
 	public Card deal()

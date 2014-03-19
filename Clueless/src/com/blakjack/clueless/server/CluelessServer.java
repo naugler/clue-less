@@ -26,7 +26,7 @@ public class CluelessServer {
     private static CluelessServer server;
     
     private Thread acceptorThread = null;
-    private Server serverthingy = new Server();
+    private GameEngine serverthingy = new GameEngine();
     
     private final Map<String, Connection> connections = new HashMap<String, Connection>();
     

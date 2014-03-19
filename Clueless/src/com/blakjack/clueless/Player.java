@@ -9,11 +9,15 @@ public class Player {
 	
 	private Person person;
 	
+	private String username;
+	
+	private int port;
+	
 	private ArrayList<Card> cards = new ArrayList<Card>();
 	
 	private boolean myTurn = false;
 	
-	private enum Person {
+	public enum Person {
 		MUSTARD("Colonel Mustard", Color.yellow),
 		WHITE("Mrs. White", Color.white),
 		PLUM("Professor Plum", new Color(255,0,255)), //Purple 
@@ -67,6 +71,26 @@ public class Player {
 	public Person getPerson()
 	{
 		return person;
+	}
+	
+	public String getUsername()
+	{
+		return username;
+	}
+	
+	public void setUsername(String name)
+	{
+		username = name;
+	}
+	
+	public int getPort()
+	{
+		return port;
+	}
+	
+	public void setPort(int port)
+	{
+		this.port = port;
 	}
 	
 	public void dealCard(Card c)
