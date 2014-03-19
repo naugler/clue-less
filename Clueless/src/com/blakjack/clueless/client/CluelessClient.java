@@ -6,14 +6,15 @@
 
 package com.blakjack.clueless.client;
 
+import com.blakjack.clueless.GameFrame;
 import com.blakjack.clueless.Connection;
 import com.blakjack.clueless.NullMessage;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Timer;
-import java.util.TimerTask;
+import javax.net.SocketFactory;
 
 /**
  * This Main class attempts to connect to a CluelessServer.
@@ -24,34 +25,14 @@ import java.util.TimerTask;
  */
 public class CluelessClient {
     
-    private static final int PORT = 10001;
-    
-    private static CluelessClient client;
-    
     private final Connection connection;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        System.out.println("Starting client...");
-        
-        client = new CluelessClient();
-        client.connect();
-    }
-    
-    public CluelessClient() {
+    public CluelessClient(String address, int port) {
         Connection initConnection = null;
         try {
-            InetAddress address = InetAddress.getLocalHost();
-            Socket clientSocket = new Socket(address, PORT);
+            SocketFactory socketFactory = SocketFactory.getDefault();
+            Socket clientSocket = socketFactory.createSocket(address, port);
             initConnection = new Connection(clientSocket);
-            new Timer().scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    ping();
-                }
-            }, 1000, 1000);
         } catch (UnknownHostException ex) {
             System.err.println("Unknown host:");
             ex.printStackTrace(System.err);
@@ -63,9 +44,16 @@ public class CluelessClient {
         connection = initConnection;
     }
     
-    private void connect() {
+    public void start(String username) {
         connection.addMessageHandler(new ClientMessageHandler());
         connection.open();
+        connection.send(username);
+    }
+    
+    public void stop() {
+        System.out.print("Shutting down client...");
+        connection.close();
+        System.out.println("done");
     }
     
     private void ping() {

@@ -28,8 +28,8 @@ public class SocketAcceptor implements Runnable {
     private final ServerSocket serverSocket;
     private final List<SocketAcceptorListener> listeners = new ArrayList<SocketAcceptorListener>();
     
-    public SocketAcceptor(InetAddress address, int port) throws IOException {
-        serverSocket = new ServerSocket(port, 10, address);
+    public SocketAcceptor(int port) throws IOException {
+        serverSocket = new ServerSocket(port);
     }
     
     public void addSocketAcceptorListener(SocketAcceptorListener listener) {
@@ -46,6 +46,7 @@ public class SocketAcceptor implements Runnable {
         }
     }
     
+    @Override
     public void run() {
         System.out.println("Accepting connections on "+serverSocket.getInetAddress().getHostAddress()+":"+serverSocket.getLocalPort()+" ...");
         while(true) {
@@ -53,8 +54,12 @@ public class SocketAcceptor implements Runnable {
                 Socket newSocket = serverSocket.accept();
                 Connection newConnection = new Connection(newSocket);
                 newConnection.open();
+                while (newConnection.getUsername() == null) {
+                    System.out.println("waiting for username...");
+                    Thread.sleep(500);
+                }
                 fireSocketAcceptorEvent(newConnection);
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 System.err.println("Failed to open connection");
                 ex.printStackTrace(System.err);
             }

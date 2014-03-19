@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class manages a single connection. This is where the reading and writing
@@ -39,6 +40,7 @@ public class Connection {
     private ObjectInputStream reader = null;
     private ObjectOutputStream writer = null;
     private Thread listenerThread = null;
+    private String username = null;
     
     private final List<ConnectionEventListener> listeners 
             = new ArrayList<ConnectionEventListener>();
@@ -51,6 +53,23 @@ public class Connection {
         listenerThread = new Thread(new Runnable() {
             @Override
             public void run() {
+//                boolean needName = true;
+//                while(!Thread.interrupted() && needName) {
+                    try {
+                        Object msg = reader.readObject();
+                        System.out.println("msg: "+msg);
+                        System.out.println("msg is a "+msg.getClass().getCanonicalName());
+                        username = (String)msg;
+//                        needName = false;
+                    } catch (IOException ex) {
+                        System.err.println(ex.getMessage());
+                        close();
+                    } catch (ClassNotFoundException ex) {
+                        System.err.println(ex.getMessage());
+                        close();
+                    }
+//                }
+                
                 while(!Thread.interrupted()) {
                     try {
                         Object msg = reader.readObject();
@@ -134,6 +153,10 @@ public class Connection {
         }
     }
     
+    public Socket getSocket() {
+        return socket;
+    }
+    
     private void startDataListener() {
         listenerThread.start();
     }
@@ -142,9 +165,35 @@ public class Connection {
         listenerThread.interrupt();
     }
     
+    public String getUsername() {
+        return username;
+    }
+    
     @Override
     public String toString() {
         return socket.getInetAddress().getHostAddress()+":"+socket.getPort();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.socket);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Connection other = (Connection) obj;
+        if (!Objects.equals(this.socket, other.socket)) {
+            return false;
+        }
+        return true;
     }
     
 }
