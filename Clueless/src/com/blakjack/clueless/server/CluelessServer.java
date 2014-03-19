@@ -7,11 +7,13 @@
 package com.blakjack.clueless.server;
 
 import com.blakjack.clueless.Connection;
-import com.blakjack.clueless.Connection.MessageHandler;
+import com.blakjack.clueless.Connection.ConnectionEvent;
+import com.blakjack.clueless.Connection.ConnectionEventListener;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,30 +23,18 @@ import java.util.Map;
  */
 public class CluelessServer {
     
-    private static final int PORT = 10001;
-    
-    private static CluelessServer server;
-    
     private Thread acceptorThread = null;
-    private GameEngine serverthingy = new GameEngine();
+    private GameEngine game = new GameEngine();
     
     private final Map<String, Connection> connections = new HashMap<String, Connection>();
     
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        System.out.println("Starting server...");
-        
-        server = new CluelessServer();
-        server.start();
-    }
+    private final List<ConnectionEventListener> listeners = new ArrayList<ConnectionEventListener>();
     
-    public CluelessServer() {
+    public CluelessServer(int port) {
         try {
-            InetAddress address = InetAddress.getLocalHost();
-            SocketAcceptor socketAcceptor = new SocketAcceptor(address, PORT);
+            SocketAcceptor socketAcceptor = new SocketAcceptor(port);
             socketAcceptor.addSocketAcceptorListener(new SocketAcceptor.SocketAcceptorListener() {
+                @Override
                 public void event(Connection connection) {
                     handleConnection(connection);
                 }
@@ -59,15 +49,44 @@ public class CluelessServer {
         }
     }
     
-    private void start() {
+    public void addServerListener(ConnectionEventListener l) {
+        listeners.add(l);
+    }
+    
+    public void removeServerListener(ConnectionEventListener l) {
+        listeners.remove(l);
+    }
+    
+    private void fireServerEvent(Connection connection, ConnectionEvent event) {
+        for (ConnectionEventListener l : listeners) {
+            l.event(connection, event);
+        }
+    }
+    
+    public void start() {
         acceptorThread.start();
     }
     
+    public void stop() {
+        System.out.print("Shutting down server...");
+        acceptorThread.interrupt();
+        for (Connection connection : connections.values()) {
+            connection.close();
+        }
+        System.out.println("done");
+    }
+    
     private void handleConnection(Connection connection) {
+        connection.addConnectionEventListener(new ConnectionEventListener() {
+            @Override
+            public void event(Connection connection, Connection.ConnectionEvent event) {
+                fireServerEvent(connection, event);
+            }
+        });
         String username = connection.getUsername();
         if (username != null) {
             System.out.println("adding connection from user: "+username);
-            connection.addMessageHandler(serverthingy);
+            connection.addMessageHandler(game);
             connections.put(username, connection);
         }
     }

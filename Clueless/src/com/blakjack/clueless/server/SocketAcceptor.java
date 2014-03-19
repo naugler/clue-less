@@ -28,8 +28,8 @@ public class SocketAcceptor implements Runnable {
     private final ServerSocket serverSocket;
     private final List<SocketAcceptorListener> listeners = new ArrayList<SocketAcceptorListener>();
     
-    public SocketAcceptor(InetAddress address, int port) throws IOException {
-        serverSocket = new ServerSocket(port, 10, address);
+    public SocketAcceptor(int port) throws IOException {
+        serverSocket = new ServerSocket(port);
     }
     
     public void addSocketAcceptorListener(SocketAcceptorListener listener) {

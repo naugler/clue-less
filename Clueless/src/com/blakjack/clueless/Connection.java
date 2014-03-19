@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class manages a single connection. This is where the reading and writing
@@ -171,6 +172,28 @@ public class Connection {
     @Override
     public String toString() {
         return socket.getInetAddress().getHostAddress()+":"+socket.getPort();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.socket);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Connection other = (Connection) obj;
+        if (!Objects.equals(this.socket, other.socket)) {
+            return false;
+        }
+        return true;
     }
     
 }
