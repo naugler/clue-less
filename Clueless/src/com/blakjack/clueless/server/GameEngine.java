@@ -60,7 +60,28 @@ public class GameEngine implements Connection.MessageHandler {
 		}		
 	}
 	
-	private void joinGame(Player p)
+	private void createPlayer(String username, Integer port)
+	{
+		boolean unusedFound = false;
+		Player player = null;
+		for (Person p : Person.values())
+		{
+			if (!unusedFound)
+			{
+				player = getPlayerFromPerson(p);
+				if (player == null)
+				{
+					unusedFound = true;
+					player = new Player(p.getName());
+				}
+			}
+		}
+		player.setUsername(username);
+		player.setPort(port);
+		addPlayer(player);
+	}
+	
+	private void addPlayer(Player p)
 	{
 		if (p.getPerson().equals(Person.SCARLET) )
 		{
@@ -72,10 +93,42 @@ public class GameEngine implements Connection.MessageHandler {
 		}
 		
 	}
+	private Player getPlayerFromPerson(Person p)
+	{
+		for (Player player : players)
+		{
+			if (player.getPerson().equals(p))
+			{
+				return player;
+			}
+		}
+		return null;
+	}
+	
+	
 
     @Override
     public void handle(Object msg) {
         CluelessMessage message = (CluelessMessage)msg;
+        String type = (String) message.getField("TYPE");
+        switch (type.toUpperCase())
+        {
+        case "SET USERNAME":
+          if (type.equalsIgnoreCase("SET USERNAME"))
+          {
+        	  if (players.size() < 6)
+        	  {
+        		  String username = (String) message.getField("USERNAME");
+        		  int port = (int) message.getField("PORT");
+        		  createPlayer(username, port);
+        	  }
+        	  else
+        	  {
+        		  System.out.println("There are already 6 players: no more can join");
+        	  }
+          }
+          break;
+        }
 /*   
  * Server Received Messages:
  *  get Player and port
@@ -100,12 +153,12 @@ public class GameEngine implements Connection.MessageHandler {
   * Player Turn summary for log
   * 
   */
-              
+         
         //do something
 //        String type = message.getField("TYPE");
 //        if (type.equalsIgnoreCase("STARTGAME")) {
             //set player turns, cards, solution whatever,
             //notify first player that their turn has started.
 //        }
-    }
+    }    
 }
