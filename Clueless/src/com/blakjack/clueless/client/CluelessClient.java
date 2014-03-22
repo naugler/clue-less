@@ -6,10 +6,10 @@
 
 package com.blakjack.clueless.client;
 
-import com.blakjack.clueless.CluelessMessage;
-import com.blakjack.clueless.CluelessMessage.Type;
-import com.blakjack.clueless.Connection;
-import com.blakjack.clueless.Connection.MessageHandler;
+import com.blakjack.clueless.common.CluelessMessage;
+import com.blakjack.clueless.common.CluelessMessage.Type;
+import com.blakjack.clueless.common.Connection;
+import com.blakjack.clueless.common.Connection.MessageHandler;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -24,27 +24,21 @@ import javax.net.SocketFactory;
 public class CluelessClient {
     
     private final String username;
+    private final String address;
+    private final int port;
     private final Connection connection;
 
     public CluelessClient(String username, String address, int port) {
         this.username = username;
-        Socket clientSocket = null;
-        try {
-            SocketFactory socketFactory = SocketFactory.getDefault();
-            clientSocket = socketFactory.createSocket(address, port);
-        } catch (UnknownHostException ex) {
-            System.err.println("Unknown host:");
-            ex.printStackTrace(System.err);
-        } catch (IOException ex) {
-            System.err.println("Failed to open socket:");
-            ex.printStackTrace(System.err);
-        }
-        
-        connection = new Connection(clientSocket);
+        this.address = address;
+        this.port = port;
+        connection = new Connection();
     }
     
-    public void start() {
-        connection.open();
+    public void start() throws UnknownHostException, IOException {
+        SocketFactory socketFactory = SocketFactory.getDefault();
+        Socket clientSocket = socketFactory.createSocket(address, port);
+        connection.open(clientSocket);
         CluelessMessage login = new CluelessMessage(Type.LOGIN);
         login.setField("source", username);
         send(login);
@@ -58,6 +52,10 @@ public class CluelessClient {
     
     public void addMessageHandler(MessageHandler handler) {
         connection.addMessageHandler(handler);
+    }
+    
+    public void addConnectionEventListener(Connection.ConnectionEventListener listener) {
+        connection.addConnectionEventListener(listener);
     }
     
     public void send(CluelessMessage message) {

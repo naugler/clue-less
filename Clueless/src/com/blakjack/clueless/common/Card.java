@@ -1,4 +1,4 @@
-package com.blakjack.clueless;
+package com.blakjack.clueless.common;
 
 public enum Card {
 	MUSTARD("Colonel Mustard", "person"),

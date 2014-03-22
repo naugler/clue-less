@@ -4,9 +4,9 @@
  * and open the template in the editor.
  */
 
-package com.blakjack.clueless;
+package com.blakjack.clueless.common;
 
-import com.blakjack.clueless.Connection.ConnectionEvent;
+import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;

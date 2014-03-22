@@ -1,4 +1,4 @@
-package com.blakjack.clueless;
+package com.blakjack.clueless.common;
 
 import java.awt.Color;
 import java.util.ArrayList;

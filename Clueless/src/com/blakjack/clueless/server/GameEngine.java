@@ -1,17 +1,17 @@
 package com.blakjack.clueless.server;
 
-import com.blakjack.clueless.Card;
-import com.blakjack.clueless.CluelessMessage;
-import com.blakjack.clueless.CluelessMessage.Type;
-import com.blakjack.clueless.Connection;
-import com.blakjack.clueless.Connection.ConnectionEvent;
+import com.blakjack.clueless.common.Card;
+import com.blakjack.clueless.common.CluelessMessage;
+import com.blakjack.clueless.common.CluelessMessage.Type;
+import com.blakjack.clueless.common.Connection;
+import com.blakjack.clueless.common.Connection.ConnectionEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.blakjack.clueless.Player;
-import com.blakjack.clueless.SquareTile;
-import com.blakjack.clueless.Player.Person;
+import com.blakjack.clueless.common.Player;
+import com.blakjack.clueless.common.SquareTile;
+import com.blakjack.clueless.common.Player.Person;
 import java.util.Date;
 
 public class GameEngine implements Connection.MessageHandler, Connection.ConnectionEventListener {
@@ -136,8 +136,8 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
-            Type action = (Type)msg.getField("type");
-            switch(action) {
+            Type type = (Type)msg.getField("type");
+            switch(type) {
                 case LOGIN:
                     if (players.size() < 6) {
                         String newUser = msg.getField("source").toString();
@@ -163,6 +163,10 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                         return;
                     }
                     break;
+                default:
+                    CluelessMessage error = new CluelessMessage(Type.ERROR);
+                    error.setField("error", "Unknown message type "+type);
+                    connection.send(msg);
             }
 //        String type = (String) message.getField("TYPE");
 //        switch (type.toUpperCase())

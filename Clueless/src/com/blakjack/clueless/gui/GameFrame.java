@@ -4,10 +4,15 @@
  * and open the template in the editor.
  */
 
-package com.blakjack.clueless;
+package com.blakjack.clueless.gui;
 
-import com.blakjack.clueless.Connection.MessageHandler;
+import com.blakjack.clueless.common.CluelessMessage;
+import com.blakjack.clueless.common.Connection;
+import com.blakjack.clueless.common.Connection.MessageHandler;
+import com.blakjack.clueless.common.LobbyPanel;
 import com.blakjack.clueless.client.CluelessClient;
+import com.blakjack.clueless.common.Connection.ConnectionEvent;
+import com.blakjack.clueless.common.Connection.ConnectionEventListener;
 import com.blakjack.clueless.server.CluelessServer;
 import java.awt.BorderLayout;
 import java.awt.Menu;
@@ -15,6 +20,8 @@ import java.awt.MenuBar;
 import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.UnknownHostException;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
@@ -24,12 +31,14 @@ import javax.swing.JTextArea;
  * 
  * @author nauglrj1
  */
-public class GameFrame extends JFrame implements MessageHandler {
+public class GameFrame extends JFrame implements MessageHandler, ConnectionEventListener {
     
     private CluelessServer server;
     private CluelessClient client;
     
     private final JTextArea log = new JTextArea();
+    private final MenuItem newGame = new MenuItem("New Game");
+    private final MenuItem joinGame = new MenuItem("Join Game");
     
     /**
      * @param args the command line arguments
@@ -52,7 +61,6 @@ public class GameFrame extends JFrame implements MessageHandler {
         Menu fileMenu = new Menu("File");
         Menu helpMenu = new Menu("Help");
         
-        MenuItem newGame = new MenuItem("New Game");
         newGame.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -61,7 +69,6 @@ public class GameFrame extends JFrame implements MessageHandler {
         });
         fileMenu.add(newGame);
         
-        MenuItem joinGame = new MenuItem("Join Game");
         joinGame.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -106,14 +113,31 @@ public class GameFrame extends JFrame implements MessageHandler {
                 title,
                 JOptionPane.OK_CANCEL_OPTION);
         if (retval == JOptionPane.OK_OPTION) {
-            //TODO(naugler) validate login configuration
+            //TODO(naugler) validate login parameters
             if (startServer) {
                 server = new CluelessServer(loginFrame.getPort());
-                server.start();
+                try {
+                    server.start();
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, "Socket error: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    server.stop();
+                    return;
+                }
             }
             client = new CluelessClient(loginFrame.getUsername(), loginFrame.getAddress(), loginFrame.getPort());
             client.addMessageHandler(this);
-            client.start();
+            client.addConnectionEventListener(this);
+            try {
+                client.start();
+            } catch (UnknownHostException ex) {
+                JOptionPane.showMessageDialog(this, "Unknown host: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                client.stop();
+                return;
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Socket error: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                client.stop();
+                return;
+            }
         }
         
         waitInLobby(startServer);
@@ -168,6 +192,17 @@ public class GameFrame extends JFrame implements MessageHandler {
             if (server != null) {
                 server.stop();
             }
+        }
+    }
+
+    @Override
+    public void event(Connection connection, Connection.ConnectionEvent event) {
+        if (event == ConnectionEvent.OPEN) {
+            newGame.setEnabled(false);
+            joinGame.setEnabled(false);
+        } else {
+            newGame.setEnabled(true);
+            joinGame.setEnabled(true);
         }
     }
     

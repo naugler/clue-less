@@ -1,4 +1,4 @@
-package com.blakjack.clueless;
+package com.blakjack.clueless.common;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -19,7 +19,8 @@ public class CluelessMessage implements Serializable {
         LOGIN,      //for logging in (duh)
         LOGOFF,     //when a player goes away - generally originates at server
         MESSAGE,    //used for sending a message to the user
-        UPDATE      //contains updates to the game
+        MOVE,       //moves a player
+        UPDATE      //contains the entire game state
     }
     
     private final Map<String, Serializable> fields = new HashMap<String, Serializable>();

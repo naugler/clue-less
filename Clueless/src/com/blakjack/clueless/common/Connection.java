@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.blakjack.clueless;
+package com.blakjack.clueless.common;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -36,7 +36,7 @@ public class Connection {
         void handle(Connection connection, CluelessMessage msg);
     }
     
-    private final Socket socket;
+    private Socket socket;
     private ObjectInputStream reader = null;
     private ObjectOutputStream writer = null;
     private Thread listenerThread = null;
@@ -46,8 +46,7 @@ public class Connection {
     private final List<MessageHandler> handlers
             = new ArrayList<MessageHandler>();
 
-    public Connection(Socket initSocket) {
-        this.socket = initSocket;
+    public Connection() {
         
         listenerThread = new Thread(new Runnable() {
             @Override
@@ -96,8 +95,10 @@ public class Connection {
         }
     }
     
-    public void open() {
+    public void open(Socket socket) {
+        this.socket = socket;
         System.out.println("Opening connection to "+this);
+        
         ObjectInputStream initReader = null;
         ObjectOutputStream initWriter = null;
         try {
@@ -117,7 +118,9 @@ public class Connection {
         System.out.println("Closing connection to "+this);
         stopDataListener();
         try {
-            socket.close();
+            if (socket != null) {
+                socket.close();
+            }
         } catch (IOException ex) {
             System.err.println("Error closing connection:");
             ex.printStackTrace(System.err);
@@ -149,7 +152,11 @@ public class Connection {
     
     @Override
     public String toString() {
-        return socket.getInetAddress().getHostAddress()+":"+socket.getPort();
+        if (socket != null) {
+            return socket.getInetAddress().getHostAddress()+":"+socket.getPort();
+        } else {
+            return "null:null";
+        }
     }
 
     @Override
