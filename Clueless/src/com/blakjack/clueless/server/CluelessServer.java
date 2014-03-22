@@ -17,18 +17,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This Main class starts up a socket acceptor and handles new connections
+ * This class starts up a socket acceptor and handles new connections
  * 
  * @author nauglrj1
  */
 public class CluelessServer {
     
     private Thread acceptorThread = null;
-    private GameEngine game = new GameEngine();
+    private final GameEngine game = new GameEngine();
     
     private final Map<String, Connection> connections = new HashMap<String, Connection>();
-    
-    private final List<ConnectionEventListener> listeners = new ArrayList<ConnectionEventListener>();
     
     public CluelessServer(int port) {
         try {
@@ -49,20 +47,6 @@ public class CluelessServer {
         }
     }
     
-    public void addServerListener(ConnectionEventListener l) {
-        listeners.add(l);
-    }
-    
-    public void removeServerListener(ConnectionEventListener l) {
-        listeners.remove(l);
-    }
-    
-    private void fireServerEvent(Connection connection, ConnectionEvent event) {
-        for (ConnectionEventListener l : listeners) {
-            l.event(connection, event);
-        }
-    }
-    
     public void start() {
         acceptorThread.start();
     }
@@ -77,18 +61,8 @@ public class CluelessServer {
     }
     
     private void handleConnection(Connection connection) {
-        connection.addConnectionEventListener(new ConnectionEventListener() {
-            @Override
-            public void event(Connection connection, Connection.ConnectionEvent event) {
-                fireServerEvent(connection, event);
-            }
-        });
-        String username = connection.getUsername();
-        if (username != null) {
-            System.out.println("adding connection from user: "+username);
-            connection.addMessageHandler(game);
-            connections.put(username, connection);
-        }
+        connection.addConnectionEventListener(game);
+        connection.addMessageHandler(game);
     }
     
 }

@@ -1,6 +1,7 @@
 package com.blakjack.clueless;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -11,12 +12,20 @@ import java.util.Map.Entry;
  * 
  * @author nauglrj1
  */
-public abstract class CluelessMessage implements Serializable {
+public class CluelessMessage implements Serializable {
     
-    private final Map<String, Serializable> fields;
+    public enum Type {
+        ERROR,      //for sending an error
+        LOGIN,      //for logging in (duh)
+        LOGOFF,     //when a player goes away - generally originates at server
+        MESSAGE,    //used for sending a message to the user
+        UPDATE      //contains updates to the game
+    }
     
-    protected CluelessMessage(Map<String, Serializable> fields) {
-        this.fields = fields;
+    private final Map<String, Serializable> fields = new HashMap<String, Serializable>();
+    
+    public CluelessMessage(Type type) {
+        setField("type", type);
     }
     
     public Map<String, Serializable> getFields() {

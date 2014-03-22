@@ -2,18 +2,19 @@ package com.blakjack.clueless.server;
 
 import com.blakjack.clueless.Card;
 import com.blakjack.clueless.CluelessMessage;
+import com.blakjack.clueless.CluelessMessage.Type;
 import com.blakjack.clueless.Connection;
+import com.blakjack.clueless.Connection.ConnectionEvent;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.blakjack.clueless.Player;
 import com.blakjack.clueless.SquareTile;
 import com.blakjack.clueless.Player.Person;
+import java.util.Date;
 
-public class GameEngine implements Connection.MessageHandler {
+public class GameEngine implements Connection.MessageHandler, Connection.ConnectionEventListener {
     
 	private static final int NUM_SQUARES = 25;
 //	Integer is the port
@@ -60,7 +61,7 @@ public class GameEngine implements Connection.MessageHandler {
 		}		
 	}
 	
-	private void createPlayer(String username, Integer port)
+	private void createPlayer(String username, Connection connection)
 	{
 		boolean unusedFound = false;
 		Player player = null;
@@ -77,12 +78,13 @@ public class GameEngine implements Connection.MessageHandler {
 			}
 		}
 		player.setUsername(username);
-		player.setPort(port);
+		player.setConnection(connection);
 		addPlayer(player);
 	}
 	
 	private void addPlayer(Player p)
 	{
+            //what?
 		if (p.getPerson().equals(Person.SCARLET) )
 		{
 			players.add(0, p);
@@ -104,31 +106,83 @@ public class GameEngine implements Connection.MessageHandler {
 		}
 		return null;
 	}
-	
-	
+
+        private void broadcast(CluelessMessage message) {
+            message.setField("source", "server");
+            message.setField("date", new Date(System.currentTimeMillis()));
+            for (Player p : players) {
+                p.getConnection().send(message);
+            }
+        }
+        
+        private CluelessMessage buildUpdate() {
+            CluelessMessage msg = new CluelessMessage(Type.UPDATE);
+            
+            int turn = -1;
+            int count = 0;
+            for (Player p : players) {
+                msg.setField("player"+count+"username", p.getUsername());
+                msg.setField("player"+count+"character", p.getPerson().getName());
+                msg.setField("player"+count+"position", p.getPosition());
+                if (p.getTurn()) {
+                    turn = count;
+                }
+                ++count;
+            }
+            msg.setField("turn", turn);
+            
+            return msg;
+        }
 
     @Override
-    public void handle(Object msg) {
-        CluelessMessage message = (CluelessMessage)msg;
-        String type = (String) message.getField("TYPE");
-        switch (type.toUpperCase())
-        {
-        case "SET USERNAME":
-          if (type.equalsIgnoreCase("SET USERNAME"))
-          {
-        	  if (players.size() < 6)
-        	  {
-        		  String username = (String) message.getField("USERNAME");
-        		  int port = (int) message.getField("PORT");
-        		  createPlayer(username, port);
-        	  }
-        	  else
-        	  {
-        		  System.out.println("There are already 6 players: no more can join");
-        	  }
-          }
-          break;
-        }
+    public void handle(Connection connection, CluelessMessage msg) {
+            Type action = (Type)msg.getField("type");
+            switch(action) {
+                case LOGIN:
+                    if (players.size() < 6) {
+                        String newUser = msg.getField("source").toString();
+                        for (Player p : players) {
+                            if (p.getUsername().equalsIgnoreCase(newUser)) {
+                                CluelessMessage error = new CluelessMessage(Type.ERROR);
+                                error.setField("error", "Username already exists");
+                                connection.send(error);
+                                connection.close();
+                                return;
+                            }
+                        }
+                        createPlayer(msg.getField("source").toString(), connection);
+                        CluelessMessage response = new CluelessMessage(Type.MESSAGE);
+                        response.setField("message", "Welcome "+newUser+"!");
+                        broadcast(response);
+                        broadcast(buildUpdate());
+                    } else {
+                        CluelessMessage error = new CluelessMessage(Type.ERROR);
+                        error.setField("error", "Game is full.");
+                        connection.send(error);
+                        connection.close();
+                        return;
+                    }
+                    break;
+            }
+//        String type = (String) message.getField("TYPE");
+//        switch (type.toUpperCase())
+//        {
+//        case "SET USERNAME":
+//          if (type.equalsIgnoreCase("SET USERNAME"))
+//          {
+//        	  if (players.size() < 6)
+//        	  {
+//        		  String username = (String) message.getField("USERNAME");
+//        		  int port = (int) message.getField("PORT");
+//        		  createPlayer(username, port);
+//        	  }
+//        	  else
+//        	  {
+//        		  System.out.println("There are already 6 players: no more can join");
+//        	  }
+//          }
+//          break;
+//        }
 /*   
  * Server Received Messages:
  *  get Player and port
@@ -161,4 +215,27 @@ public class GameEngine implements Connection.MessageHandler {
             //notify first player that their turn has started.
 //        }
     }    
+
+    @Override
+    public void event(Connection connection, Connection.ConnectionEvent event) {
+        if (event == ConnectionEvent.CLOSED) {
+            Player player = null;
+            for (Player p : players) {
+                if (p.getConnection() == connection) {
+                    player = p;
+                    break;
+                }
+            }
+            if (player != null) {
+                players.remove(player);
+                CluelessMessage logoff = new CluelessMessage(Type.LOGOFF);
+                logoff.setField("username", player.getUsername());
+                broadcast(logoff);
+            } else {
+                CluelessMessage error = new CluelessMessage(Type.ERROR);
+                error.setField("error", "Server error: unknown client disconnected");
+                broadcast(error);
+            }
+        }
+    }
 }

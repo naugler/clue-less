@@ -33,14 +33,13 @@ public class Connection {
     }
     
     public static interface MessageHandler {
-        void handle(Object msg);
+        void handle(Connection connection, CluelessMessage msg);
     }
     
     private final Socket socket;
     private ObjectInputStream reader = null;
     private ObjectOutputStream writer = null;
     private Thread listenerThread = null;
-    private String username = null;
     
     private final List<ConnectionEventListener> listeners 
             = new ArrayList<ConnectionEventListener>();
@@ -53,26 +52,9 @@ public class Connection {
         listenerThread = new Thread(new Runnable() {
             @Override
             public void run() {
-//                boolean needName = true;
-//                while(!Thread.interrupted() && needName) {
-                    try {
-                        Object msg = reader.readObject();
-                        System.out.println("msg: "+msg);
-                        System.out.println("msg is a "+msg.getClass().getCanonicalName());
-                        username = (String)msg;
-//                        needName = false;
-                    } catch (IOException ex) {
-                        System.err.println(ex.getMessage());
-                        close();
-                    } catch (ClassNotFoundException ex) {
-                        System.err.println(ex.getMessage());
-                        close();
-                    }
-//                }
-                
                 while(!Thread.interrupted()) {
                     try {
-                        Object msg = reader.readObject();
+                        CluelessMessage msg = (CluelessMessage)reader.readObject();
                         fireMessage(msg);
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
@@ -108,9 +90,9 @@ public class Connection {
         handlers.remove(handler);
     }
     
-    private void fireMessage(Object msg) {
+    private void fireMessage(CluelessMessage msg) {
         for (MessageHandler handler : handlers) {
-            handler.handle(msg);
+            handler.handle(this, msg);
         }
     }
     
@@ -165,10 +147,6 @@ public class Connection {
         listenerThread.interrupt();
     }
     
-    public String getUsername() {
-        return username;
-    }
-    
     @Override
     public String toString() {
         return socket.getInetAddress().getHostAddress()+":"+socket.getPort();
@@ -177,8 +155,7 @@ public class Connection {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.socket);
-        return hash;
+        return 79 * hash + Objects.hashCode(this.socket);
     }
 
     @Override
@@ -190,10 +167,7 @@ public class Connection {
             return false;
         }
         final Connection other = (Connection) obj;
-        if (!Objects.equals(this.socket, other.socket)) {
-            return false;
-        }
-        return true;
+        return !Objects.equals(this.socket, other.socket);
     }
     
 }

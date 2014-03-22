@@ -6,8 +6,10 @@
 
 package com.blakjack.clueless;
 
+import com.blakjack.clueless.Connection.MessageHandler;
 import com.blakjack.clueless.client.CluelessClient;
 import com.blakjack.clueless.server.CluelessServer;
+import java.awt.BorderLayout;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
@@ -15,16 +17,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 
 /**
  * The main application frame for Clue-Less
  * 
  * @author nauglrj1
  */
-public class GameFrame extends JFrame {
+public class GameFrame extends JFrame implements MessageHandler {
     
     private CluelessServer server;
     private CluelessClient client;
+    
+    private final JTextArea log = new JTextArea();
     
     /**
      * @param args the command line arguments
@@ -42,7 +47,8 @@ public class GameFrame extends JFrame {
     }
     
     private void initializeComponents() {
-        this.setSize(600, 400);
+        setSize(600, 400);
+        setLayout(new BorderLayout());
         Menu fileMenu = new Menu("File");
         Menu helpMenu = new Menu("Help");
         
@@ -86,14 +92,18 @@ public class GameFrame extends JFrame {
         bar.add(fileMenu);
         bar.add(helpMenu);
         this.setMenuBar(bar);
+        
+        log("Welcome to Clue-Less!");
+        log.setEditable(false);
+        add(log, BorderLayout.WEST);
     }
     
     private void connect(boolean startServer) {
         LoginPanel loginFrame = new LoginPanel(startServer);
         String title = startServer ? "New Game" : "Join Game";
         int retval = JOptionPane.showConfirmDialog(this, 
-                loginFrame, 
-                title, 
+                loginFrame,
+                title,
                 JOptionPane.OK_CANCEL_OPTION);
         if (retval == JOptionPane.OK_OPTION) {
             //TODO(naugler) validate login configuration
@@ -101,24 +111,63 @@ public class GameFrame extends JFrame {
                 server = new CluelessServer(loginFrame.getPort());
                 server.start();
             }
-            client = new CluelessClient(loginFrame.getAddress(), loginFrame.getPort());
-            client.start(loginFrame.getUsername());
+            client = new CluelessClient(loginFrame.getUsername(), loginFrame.getAddress(), loginFrame.getPort());
+            client.addMessageHandler(this);
+            client.start();
         }
         
-        waitInLobby();
+        waitInLobby(startServer);
     }
     
-    private void waitInLobby() {
-        LobbyPanel lobby = new LobbyPanel();
+    private void waitInLobby(boolean startServer) {
+        LobbyPanel lobby = new LobbyPanel(startServer);
+    }
+    
+    @Override
+    public void handle(Connection connection, CluelessMessage msg) {
+        CluelessMessage.Type type = (CluelessMessage.Type)msg.getField("type");
+        switch(type) {
+            case ERROR:
+                JOptionPane.showMessageDialog(this, msg.getField("error"), "Error", JOptionPane.ERROR_MESSAGE);
+                log(msg.getField("error").toString());
+                break;
+            case LOGIN:
+                log("Welcome user "+msg.getField("username")+"!");
+                break;
+            case LOGOFF:
+                log("User "+msg.getField("username")+" has left.");
+                break;
+            case MESSAGE:
+                log(msg.getField("source")+": "+msg.getField("message"));
+                break;
+            case UPDATE:
+                handleUpdate(msg);
+                break;
+            default:
+                log("Unknown message: "+msg);
+        }
+    }
+    
+    /**
+     * This updates the GUI to reflect the current state of the game.
+     * @param msg 
+     */
+    private void handleUpdate(CluelessMessage msg) {
+        
+    }
+    
+    public void log(String message) {
+        log.append(message+"\n");
     }
     
     private void shutdown() {
-        //TODO(naugler) show confirmation dialog?
-        if (client != null) {
-            client.stop();
-        }
-        if (server != null) {
-            server.stop();
+        if (JOptionPane.showConfirmDialog(this, "Are you sure you would like to exit?") == JOptionPane.OK_OPTION) {
+            if (client != null) {
+                client.stop();
+            }
+            if (server != null) {
+                server.stop();
+            }
         }
     }
     
