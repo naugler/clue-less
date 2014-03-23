@@ -1,4 +1,4 @@
-package com.blakjack.clueless;
+package com.blakjack.clueless.common;
 
 public class SquareTile {
 	Player occupyingPlayer = null;

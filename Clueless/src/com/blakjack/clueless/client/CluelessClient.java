@@ -6,48 +6,42 @@
 
 package com.blakjack.clueless.client;
 
-import com.blakjack.clueless.GameFrame;
-import com.blakjack.clueless.Connection;
-import com.blakjack.clueless.NullMessage;
+import com.blakjack.clueless.common.CluelessMessage;
+import com.blakjack.clueless.common.CluelessMessage.Type;
+import com.blakjack.clueless.common.Connection;
+import com.blakjack.clueless.common.Connection.MessageHandler;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Date;
 import javax.net.SocketFactory;
 
 /**
- * This Main class attempts to connect to a CluelessServer.
- * Currently it is connecting to the local address, but it should eventually be
- * made smarter.
+ * This class attempts to connect to a CluelessServer.
  * 
  * @author nauglrj1
  */
 public class CluelessClient {
     
+    private final String username;
+    private final String address;
+    private final int port;
     private final Connection connection;
 
-    public CluelessClient(String address, int port) {
-        Connection initConnection = null;
-        try {
-            SocketFactory socketFactory = SocketFactory.getDefault();
-            Socket clientSocket = socketFactory.createSocket(address, port);
-            initConnection = new Connection(clientSocket);
-        } catch (UnknownHostException ex) {
-            System.err.println("Unknown host:");
-            ex.printStackTrace(System.err);
-        } catch (IOException ex) {
-            System.err.println("Failed to open socket:");
-            ex.printStackTrace(System.err);
-        }
-        
-        connection = initConnection;
+    public CluelessClient(String username, String address, int port) {
+        this.username = username;
+        this.address = address;
+        this.port = port;
+        connection = new Connection();
     }
     
-    public void start(String username) {
-        connection.addMessageHandler(new ClientMessageHandler());
-        connection.open();
-        connection.send(username);
+    public void start() throws UnknownHostException, IOException {
+        SocketFactory socketFactory = SocketFactory.getDefault();
+        Socket clientSocket = socketFactory.createSocket(address, port);
+        connection.open(clientSocket);
+        CluelessMessage login = new CluelessMessage(Type.LOGIN);
+        login.setField("source", username);
+        send(login);
     }
     
     public void stop() {
@@ -56,9 +50,18 @@ public class CluelessClient {
         System.out.println("done");
     }
     
-    private void ping() {
-        System.out.println("ping");
-        connection.send(new NullMessage());
+    public void addMessageHandler(MessageHandler handler) {
+        connection.addMessageHandler(handler);
+    }
+    
+    public void addConnectionEventListener(Connection.ConnectionEventListener listener) {
+        connection.addConnectionEventListener(listener);
+    }
+    
+    public void send(CluelessMessage message) {
+        message.setField("source", username);
+        message.setField("date", new Date(System.currentTimeMillis()));
+        connection.send(message);
     }
     
 }

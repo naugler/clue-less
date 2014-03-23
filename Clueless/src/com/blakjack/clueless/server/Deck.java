@@ -1,6 +1,6 @@
 package com.blakjack.clueless.server;
 
-import com.blakjack.clueless.Card;
+import com.blakjack.clueless.common.Card;
 
 public class Deck {
 	private final int NUM_CARDS = 21;

@@ -6,9 +6,8 @@
 
 package com.blakjack.clueless.server;
 
-import com.blakjack.clueless.Connection;
+import com.blakjack.clueless.common.Connection;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -52,12 +51,8 @@ public class SocketAcceptor implements Runnable {
         while(true) {
             try {
                 Socket newSocket = serverSocket.accept();
-                Connection newConnection = new Connection(newSocket);
-                newConnection.open();
-                while (newConnection.getUsername() == null) {
-                    System.out.println("waiting for username...");
-                    Thread.sleep(500);
-                }
+                Connection newConnection = new Connection();
+                newConnection.open(newSocket);
                 fireSocketAcceptorEvent(newConnection);
             } catch (Exception ex) {
                 System.err.println("Failed to open connection");

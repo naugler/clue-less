@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.blakjack.clueless;
+package com.blakjack.clueless.common;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -33,46 +33,27 @@ public class Connection {
     }
     
     public static interface MessageHandler {
-        void handle(Object msg);
+        void handle(Connection connection, CluelessMessage msg);
     }
     
-    private final Socket socket;
+    private Socket socket;
     private ObjectInputStream reader = null;
     private ObjectOutputStream writer = null;
     private Thread listenerThread = null;
-    private String username = null;
     
     private final List<ConnectionEventListener> listeners 
             = new ArrayList<ConnectionEventListener>();
     private final List<MessageHandler> handlers
             = new ArrayList<MessageHandler>();
 
-    public Connection(Socket initSocket) {
-        this.socket = initSocket;
+    public Connection() {
         
         listenerThread = new Thread(new Runnable() {
             @Override
             public void run() {
-//                boolean needName = true;
-//                while(!Thread.interrupted() && needName) {
-                    try {
-                        Object msg = reader.readObject();
-                        System.out.println("msg: "+msg);
-                        System.out.println("msg is a "+msg.getClass().getCanonicalName());
-                        username = (String)msg;
-//                        needName = false;
-                    } catch (IOException ex) {
-                        System.err.println(ex.getMessage());
-                        close();
-                    } catch (ClassNotFoundException ex) {
-                        System.err.println(ex.getMessage());
-                        close();
-                    }
-//                }
-                
                 while(!Thread.interrupted()) {
                     try {
-                        Object msg = reader.readObject();
+                        CluelessMessage msg = (CluelessMessage)reader.readObject();
                         fireMessage(msg);
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
@@ -108,14 +89,16 @@ public class Connection {
         handlers.remove(handler);
     }
     
-    private void fireMessage(Object msg) {
+    private void fireMessage(CluelessMessage msg) {
         for (MessageHandler handler : handlers) {
-            handler.handle(msg);
+            handler.handle(this, msg);
         }
     }
     
-    public void open() {
+    public void open(Socket socket) {
+        this.socket = socket;
         System.out.println("Opening connection to "+this);
+        
         ObjectInputStream initReader = null;
         ObjectOutputStream initWriter = null;
         try {
@@ -135,7 +118,9 @@ public class Connection {
         System.out.println("Closing connection to "+this);
         stopDataListener();
         try {
-            socket.close();
+            if (socket != null) {
+                socket.close();
+            }
         } catch (IOException ex) {
             System.err.println("Error closing connection:");
             ex.printStackTrace(System.err);
@@ -165,20 +150,19 @@ public class Connection {
         listenerThread.interrupt();
     }
     
-    public String getUsername() {
-        return username;
-    }
-    
     @Override
     public String toString() {
-        return socket.getInetAddress().getHostAddress()+":"+socket.getPort();
+        if (socket != null) {
+            return socket.getInetAddress().getHostAddress()+":"+socket.getPort();
+        } else {
+            return "null:null";
+        }
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.socket);
-        return hash;
+        return 79 * hash + Objects.hashCode(this.socket);
     }
 
     @Override
@@ -190,10 +174,7 @@ public class Connection {
             return false;
         }
         final Connection other = (Connection) obj;
-        if (!Objects.equals(this.socket, other.socket)) {
-            return false;
-        }
-        return true;
+        return !Objects.equals(this.socket, other.socket);
     }
     
 }

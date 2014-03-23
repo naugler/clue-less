@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package com.blakjack.clueless;
+package com.blakjack.clueless.gui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

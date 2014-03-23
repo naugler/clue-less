@@ -1,4 +1,4 @@
-package com.blakjack.clueless;
+package com.blakjack.clueless.common;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -11,7 +11,7 @@ public class Player {
 	
 	private String username;
 	
-	private int port;
+	private Connection connection;
 	
 	private ArrayList<Card> cards = new ArrayList<Card>();
 	
@@ -83,14 +83,14 @@ public class Player {
 		username = name;
 	}
 	
-	public int getPort()
+	public Connection getConnection()
 	{
-		return port;
+		return connection;
 	}
 	
-	public void setPort(int port)
+	public void setConnection(Connection connection)
 	{
-		this.port = port;
+		this.connection = connection;
 	}
 	
 	public void dealCard(Card c)
@@ -121,6 +121,6 @@ public class Player {
 	public boolean getTurn()
 	{
 		return myTurn;
-	}
+	}        
 	
 }
