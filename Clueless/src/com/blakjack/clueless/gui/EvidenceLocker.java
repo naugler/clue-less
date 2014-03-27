@@ -1,4 +1,4 @@
-package com.blakjack.clueless.client;
+package com.blakjack.clueless.gui;
 
 import javax.swing.JTable;
 

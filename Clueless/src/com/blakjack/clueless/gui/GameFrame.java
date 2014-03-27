@@ -6,14 +6,14 @@
 
 package com.blakjack.clueless.gui;
 
+import com.blakjack.clueless.client.CluelessClient;
 import com.blakjack.clueless.common.CluelessMessage;
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.MessageHandler;
-import com.blakjack.clueless.common.LobbyPanel;
-import com.blakjack.clueless.client.CluelessClient;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Connection.ConnectionEventListener;
 import com.blakjack.clueless.server.CluelessServer;
+
 import java.awt.BorderLayout;
 import java.awt.Menu;
 import java.awt.MenuBar;
@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.UnknownHostException;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
@@ -162,6 +163,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 log("User "+msg.getField("username")+" has left.");
                 break;
             case MESSAGE:
+            	//TODO(naugler) messaging?
                 log(msg.getField("source")+": "+msg.getField("message"));
                 break;
             case UPDATE:
@@ -177,7 +179,12 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
      * @param msg 
      */
     private void handleUpdate(CluelessMessage msg) {
-        
+        //what kind of message was?
+    	//movement - move a piece
+    		//change game board
+    		//update game pad
+    	//suggestions? - show suggestion popup
+    	
     }
     
     public void log(String message) {

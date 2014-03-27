@@ -1,7 +1,7 @@
 package com.blakjack.clueless.common;
 
 public class SquareTile {
-	Player occupyingPlayer = null;
+	Boolean occupied = false;
 	RoomType room;
 	private enum RoomType {HALLWAY, ROOM, CORNER, BLANK}
 	

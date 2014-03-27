@@ -1,5 +1,6 @@
 package com.blakjack.clueless.server;
 
+import com.blakjack.clueless.client.UserEngine;
 import com.blakjack.clueless.common.Card;
 import com.blakjack.clueless.common.CluelessMessage;
 import com.blakjack.clueless.common.CluelessMessage.Type;
@@ -12,18 +13,29 @@ import java.util.List;
 import com.blakjack.clueless.common.Player;
 import com.blakjack.clueless.common.SquareTile;
 import com.blakjack.clueless.common.Player.Person;
+
+
+
 import java.util.Date;
 
 public class GameEngine implements Connection.MessageHandler, Connection.ConnectionEventListener {
     
 	private static final int NUM_SQUARES = 25;
 //	Integer is the port
-	List<Player> players = new ArrayList<Player>();
+	List<UserEngine> users = new ArrayList<UserEngine>();
+	List<Person> availChars = new ArrayList<Person>();
 	private static SquareTile[] gameboard = new SquareTile[NUM_SQUARES];
 	private static Deck deck = new Deck();
+//	This index determines the players turn, the integer refers to the index in the players list
+	private static int playerTurnIndex = 0;
         
-	private static void initialize() 
+	public GameEngine() 
 	{
+		for (Person p : Person.values())
+		{
+			availChars.add(p);
+		}
+		
 		for (int i = 0; i < NUM_SQUARES; i++)
 		{
 			gameboard[i] = new SquareTile(i);
@@ -50,83 +62,96 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		Card card = deck.deal();
 		while (card != null)
 		{
-			for(Player p : players)
+			for(UserEngine u : users)
 			{
 				if (card != null)
 				{
-					p.dealCard(card);
+					u.dealCard(card);
 					card = deck.deal();
 				}
 			}
 		}		
 	}
 	
+//	TODO For now we will just give a random character - it is easiest
+//	If there is time, we can allow the user to choose
 	private void createPlayer(String username, Connection connection)
 	{
-		boolean unusedFound = false;
-		Player player = null;
-		for (Person p : Person.values())
-		{
-			if (!unusedFound)
-			{
-				player = getPlayerFromPerson(p);
-				if (player == null)
-				{
-					unusedFound = true;
-					player = new Player(p.getName());
-				}
-			}
+//		boolean unusedFound = false;
+//		Player player = null;
+//		for (Person p : Person.values())
+//		{
+//			if (!unusedFound)
+//			{
+//				player = getPlayerFromPerson(p);
+//				if (player == null)
+//				{
+//					unusedFound = true;
+//					player = new Player(p.getName());
+//				}
+//			}
+//		}
+		UserEngine user = new UserEngine();
+		Player player;
+		
+//		TODO: Possible issues with race conditions
+		synchronized (availChars) {
+			int rand = (int) (Math.random() * availChars.size());
+			player = new Player(availChars.get(rand).getName());
+	//		In case there are race conditions, remove the actual person from the list without using index
+			availChars.remove(player.getPerson());
 		}
 		player.setUsername(username);
-		player.setConnection(connection);
-		addPlayer(player);
-	}
-	
-	private void addPlayer(Player p)
-	{
-            //what?
-		if (p.getPerson().equals(Person.SCARLET) )
-		{
-			players.add(0, p);
-		}
-		else
-		{
-			players.add(p);
-		}
+		user.setPlayer(player);
+		user.setConnection(connection);
+		
+		addPlayer(user);
 		
 	}
+	
 	private Player getPlayerFromPerson(Person p)
 	{
-		for (Player player : players)
+		for (UserEngine user : users)
 		{
-			if (player.getPerson().equals(p))
+			if (user.getPlayer().getPerson().equals(p))
 			{
-				return player;
+				return user.getPlayer();
 			}
 		}
 		return null;
 	}
+	
+	private void addPlayer(UserEngine u)
+	{
+//        Scarlet always goes first so make sure they are put in the front of the list 
+		if (u.getPlayer().getPerson().equals(Person.SCARLET) )
+		{
+			users.add(0, u);
+		}
+		else
+		{
+			users.add(u);
+		}
+		
+	}
+	
 
         private void broadcast(CluelessMessage message) {
             message.setField("source", "server");
             message.setField("date", new Date(System.currentTimeMillis()));
-            for (Player p : players) {
-                p.getConnection().send(message);
+            for (UserEngine u : users) {
+                u.getConnection().send(message);
             }
         }
         
         private CluelessMessage buildUpdate() {
             CluelessMessage msg = new CluelessMessage(Type.UPDATE);
-            
-            int turn = -1;
+            int turn = playerTurnIndex;
             int count = 0;
-            for (Player p : players) {
-                msg.setField("player"+count+"username", p.getUsername());
-                msg.setField("player"+count+"character", p.getPerson().getName());
-                msg.setField("player"+count+"position", p.getPosition());
-                if (p.getTurn()) {
-                    turn = count;
-                }
+            for (UserEngine u : users) {
+                msg.setField("player"+count+"username", u.getPlayer().getUsername());
+                msg.setField("player"+count+"character", u.getPlayer().getPerson().getName());
+                msg.setField("player"+count+"position", u.getPosition());
                 ++count;
             }
             msg.setField("turn", turn);
@@ -139,10 +164,10 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
             Type type = (Type)msg.getField("type");
             switch(type) {
                 case LOGIN:
-                    if (players.size() < 6) {
+                    if (users.size() < 6) {
                         String newUser = msg.getField("source").toString();
-                        for (Player p : players) {
-                            if (p.getUsername().equalsIgnoreCase(newUser)) {
+                        for (UserEngine u : users) {
+                            if (u.getPlayer().getUsername().equalsIgnoreCase(newUser)) {
                                 CluelessMessage error = new CluelessMessage(Type.ERROR);
                                 error.setField("error", "Username already exists");
                                 connection.send(error);
@@ -163,6 +188,34 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                         return;
                     }
                     break;
+//                case SUGGEST:
+//                	//decide who this connection is accusing...
+//                	Player suggestee = players.get(suggestedPlayer);
+//                	//tell them about it!
+//                	suggestee.getConnection().send(msg);
+//                	
+//                	UserEngine1		UserEngine2 		UserEngine3
+//                	 - CLIENT		 - CLIENT		 - CLIENT
+//                	 - SERVER
+//                	 	GAMEENGINE
+//	                	 	USER*
+//	                	 		getValidmoves()
+//	                	 		
+//	                	 		PLAYER
+//	                	 			CARDS
+//	                	 			PERSON
+//	                	 		CONNECTION
+//                	
+//                	Game engine
+//               			list userEngines
+//               	
+//                	////
+//                	UserEngine (user engine???)
+//                		Connection
+//                		Player
+//                		
+//                	UserEngine game = connections.get(suggestedPlayer)
+//                	break;
                 default:
                     CluelessMessage error = new CluelessMessage(Type.ERROR);
                     error.setField("error", "Unknown message type "+type);
@@ -223,17 +276,17 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
     @Override
     public void event(Connection connection, Connection.ConnectionEvent event) {
         if (event == ConnectionEvent.CLOSED) {
-            Player player = null;
-            for (Player p : players) {
-                if (p.getConnection() == connection) {
-                    player = p;
+            UserEngine user = null;
+            for (UserEngine u : users) {
+                if (u.getConnection() == connection) {
+                    user = u;
                     break;
                 }
             }
-            if (player != null) {
-                players.remove(player);
+            if (user != null) {
+                users.remove(user);
                 CluelessMessage logoff = new CluelessMessage(Type.LOGOFF);
-                logoff.setField("username", player.getUsername());
+                logoff.setField("username", user.getPlayer().getUsername());
                 broadcast(logoff);
             } else {
                 CluelessMessage error = new CluelessMessage(Type.ERROR);
