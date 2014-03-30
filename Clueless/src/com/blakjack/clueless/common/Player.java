@@ -5,17 +5,15 @@ import java.util.ArrayList;
 
 public class Player {
 	
-	private int position = -1;
+//	private int position = -1;
 	
 	private Person person;
 	
 	private String username;
 	
-	private Connection connection;
+//	private Connection connection;
 	
-	private ArrayList<Card> cards = new ArrayList<Card>();
-	
-	private boolean myTurn = false;
+//	private ArrayList<Card> cards = new ArrayList<Card>();
 	
 	public enum Person {
 		MUSTARD("Colonel Mustard", Color.yellow),
@@ -83,44 +81,64 @@ public class Player {
 		username = name;
 	}
 	
-	public Connection getConnection()
+	public void accuse()
 	{
-		return connection;
+		
 	}
 	
-	public void setConnection(Connection connection)
+	public void suggest()
 	{
-		this.connection = connection;
+		
+	}
+
+	// to respond to suggestion
+	public Card chooseCard()
+	{
+		return null;
 	}
 	
-	public void dealCard(Card c)
+	public void move()
 	{
-		cards.add(c);
+		
 	}
 	
-	public ArrayList<Card> getCards()
+	public void endTurn()
 	{
-		return cards;
+		
 	}
 	
-	public int getPosition()
+	public void login()
 	{
-		return position;
+		
 	}
+//	public Connection getConnection()
+//	{
+//		return connection;
+//	}
+//	
+//	public void setConnection(Connection connection)
+//	{
+//		this.connection = connection;
+//	}
 	
-	public void setPosition(int pos)
-	{
-		position = pos;
-	}
+//	public void dealCard(Card c)
+//	{
+//		cards.add(c);
+//	}
+//	
+//	public ArrayList<Card> getCards()
+//	{
+//		return cards;
+//	}
 	
-	public void setTurn(boolean myTurn)
-	{
-		this.myTurn = myTurn;
-	}
-	
-	public boolean getTurn()
-	{
-		return myTurn;
-	}        
+//	public int getPosition()
+//	{
+//		return position;
+//	}
+//	
+//	public void setPosition(int pos)
+//	{
+//		position = pos;
+//	}
 	
 }

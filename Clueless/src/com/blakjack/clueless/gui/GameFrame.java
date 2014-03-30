@@ -6,14 +6,12 @@
 
 package com.blakjack.clueless.gui;
 
+import com.blakjack.clueless.client.UserEngine;
 import com.blakjack.clueless.common.CluelessMessage;
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.MessageHandler;
-import com.blakjack.clueless.common.LobbyPanel;
-import com.blakjack.clueless.client.CluelessClient;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Connection.ConnectionEventListener;
-import com.blakjack.clueless.server.CluelessServer;
 import java.awt.BorderLayout;
 import java.awt.Menu;
 import java.awt.MenuBar;
@@ -22,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.UnknownHostException;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
@@ -33,16 +32,14 @@ import javax.swing.JTextArea;
  */
 public class GameFrame extends JFrame implements MessageHandler, ConnectionEventListener {
     
-    private CluelessServer server;
-    private CluelessClient client;
-    
     private final JTextArea log = new JTextArea();
     private final MenuItem newGame = new MenuItem("New Game");
     private final MenuItem joinGame = new MenuItem("Join Game");
+    private UserEngine userEngine = new UserEngine();
     
-    /**
-     * @param args the command line arguments
-     */
+//    /**
+//     * @param args the command line arguments
+//     */
     public static void main(String[] args) {
         System.out.println("Starting Clue-Less...");
         GameFrame gameFrame = new GameFrame();
@@ -64,7 +61,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         newGame.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                connect(true);
+            	connect(true);
             }
         });
         fileMenu.add(newGame);
@@ -105,44 +102,30 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         add(log, BorderLayout.WEST);
     }
     
-    private void connect(boolean startServer) {
-        LoginPanel loginFrame = new LoginPanel(startServer);
+    private void connect(boolean startServer){
+    	LoginPanel loginFrame = new LoginPanel(startServer);
         String title = startServer ? "New Game" : "Join Game";
         int retval = JOptionPane.showConfirmDialog(this, 
                 loginFrame,
                 title,
                 JOptionPane.OK_CANCEL_OPTION);
-        if (retval == JOptionPane.OK_OPTION) {
-            //TODO(naugler) validate login parameters
-            if (startServer) {
-                server = new CluelessServer(loginFrame.getPort());
-                try {
-                    server.start();
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(this, "Socket error: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    server.stop();
-                    return;
-                }
-            }
-            client = new CluelessClient(loginFrame.getUsername(), loginFrame.getAddress(), loginFrame.getPort());
-            client.addMessageHandler(this);
-            client.addConnectionEventListener(this);
-            try {
-                client.start();
-            } catch (UnknownHostException ex) {
-                JOptionPane.showMessageDialog(this, "Unknown host: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                client.stop();
-                return;
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Socket error: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                client.stop();
-                return;
-            }
+        try
+        {
+        	userEngine.connect(startServer, retval == JOptionPane.OK_OPTION, loginFrame.getPort(), loginFrame.getAddress(), loginFrame.getUsername(), this);
         }
-        
+        catch (UnknownHostException ex) {
+        	JOptionPane.showMessageDialog(this, "Unknown host: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        	return;
+        }
+        catch (IOException ex)
+        {
+        	JOptionPane.showMessageDialog(this, "Socket error: "+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        	return;
+        }
         waitInLobby(startServer);
+        
     }
-    
+
     private void waitInLobby(boolean startServer) {
         LobbyPanel lobby = new LobbyPanel(startServer);
     }
@@ -162,6 +145,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 log("User "+msg.getField("username")+" has left.");
                 break;
             case MESSAGE:
+            	//TODO(naugler) messaging?
                 log(msg.getField("source")+": "+msg.getField("message"));
                 break;
             case UPDATE:
@@ -177,7 +161,12 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
      * @param msg 
      */
     private void handleUpdate(CluelessMessage msg) {
-        
+        //what kind of message was?
+    	//movement - move a piece
+    		//change game board
+    		//update game pad
+    	//suggestions? - show suggestion popup
+    	
     }
     
     public void log(String message) {
@@ -186,12 +175,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     
     private void shutdown() {
         if (JOptionPane.showConfirmDialog(this, "Are you sure you would like to exit?") == JOptionPane.OK_OPTION) {
-            if (client != null) {
-                client.stop();
-            }
-            if (server != null) {
-                server.stop();
-            }
+           userEngine.shutdown();
         }
     }
 
