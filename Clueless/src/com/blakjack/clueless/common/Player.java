@@ -81,6 +81,36 @@ public class Player {
 		username = name;
 	}
 	
+	public void accuse()
+	{
+		
+	}
+	
+	public void suggest()
+	{
+		
+	}
+
+	// to respond to suggestion
+	public Card chooseCard()
+	{
+		return null;
+	}
+	
+	public void move()
+	{
+		
+	}
+	
+	public void endTurn()
+	{
+		
+	}
+	
+	public void login()
+	{
+		
+	}
 //	public Connection getConnection()
 //	{
 //		return connection;
