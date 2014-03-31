@@ -188,6 +188,10 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                         return;
                     }
                     break;
+                case START:
+                    //TODO(naugler) sanitize client message
+                    broadcast(msg);
+                    break;
 //                case SUGGEST:
 //                	//decide who this connection is accusing...
 //                	Player suggestee = players.get(suggestedPlayer);
@@ -221,25 +225,6 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     error.setField("error", "Unknown message type "+type);
                     connection.send(msg);
             }
-//        String type = (String) message.getField("TYPE");
-//        switch (type.toUpperCase())
-//        {
-//        case "SET USERNAME":
-//          if (type.equalsIgnoreCase("SET USERNAME"))
-//          {
-//        	  if (players.size() < 6)
-//        	  {
-//        		  String username = (String) message.getField("USERNAME");
-//        		  int port = (int) message.getField("PORT");
-//        		  createPlayer(username, port);
-//        	  }
-//        	  else
-//        	  {
-//        		  System.out.println("There are already 6 players: no more can join");
-//        	  }
-//          }
-//          break;
-//        }
 /*   
  * Server Received Messages:
  *  get Player and port
@@ -288,6 +273,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 CluelessMessage logoff = new CluelessMessage(Type.LOGOFF);
                 logoff.setField("username", user.getPlayer().getUsername());
                 broadcast(logoff);
+                broadcast(buildUpdate());
             } else {
                 CluelessMessage error = new CluelessMessage(Type.ERROR);
                 error.setField("error", "Server error: unknown client disconnected");

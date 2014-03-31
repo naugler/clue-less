@@ -55,7 +55,14 @@ public class UserEngine implements MessageHandler, ConnectionEventListener {
 //	{
 //		username = name;
 //	}
-	
+        public CluelessClient getClient() {
+                return client;
+        }
+
+        public void setClient(CluelessClient client) {
+                this.client = client;
+        }
+        
 	public void setConnection(Connection connection)
 	{
 		this.connection = connection;
@@ -142,11 +149,7 @@ public class UserEngine implements MessageHandler, ConnectionEventListener {
 
 @Override
 public void event(Connection connection, ConnectionEvent event) {
-	// TODO Auto-generated method stub
-	
+    
 }
-
-	
-	
 	
 }

@@ -20,6 +20,7 @@ public class CluelessMessage implements Serializable {
         LOGOFF,     //when a player goes away - generally originates at server
         MESSAGE,    //used for sending a message to the user
         MOVE,       //moves a player
+        START,      //start the game!
         UPDATE      //contains the entire game state
     }
     

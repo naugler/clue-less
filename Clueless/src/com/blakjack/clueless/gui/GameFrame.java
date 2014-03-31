@@ -127,7 +127,15 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     }
 
     private void waitInLobby(boolean startServer) {
-        LobbyPanel lobby = new LobbyPanel(startServer);
+        LobbyDialog lobby = new LobbyDialog(startServer, userEngine);
+        userEngine.getClient().addMessageHandler(lobby);
+        
+        CluelessMessage login = new CluelessMessage(CluelessMessage.Type.LOGIN);
+        userEngine.getClient().send(login);
+        
+        lobby.setModal(true);
+        lobby.setVisible(true);
+        userEngine.getClient().removeMessageHandler(lobby);
     }
     
     @Override
