@@ -3,16 +3,18 @@ package com.blakjack.clueless.server;
 import com.blakjack.clueless.client.UserEngine;
 import com.blakjack.clueless.common.Card;
 import com.blakjack.clueless.common.CluelessMessage;
+import com.blakjack.clueless.common.Player;
 import com.blakjack.clueless.common.CluelessMessage.Type;
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
+import com.blakjack.clueless.common.Player.Character;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.blakjack.clueless.common.Player;
 import com.blakjack.clueless.common.SquareTile;
-import com.blakjack.clueless.common.Player.Person;
+
+
 
 
 
@@ -22,8 +24,9 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
     
 	private static final int NUM_SQUARES = 25;
 //	Integer is the port
+	
 	List<UserEngine> users = new ArrayList<UserEngine>();
-	List<Person> availChars = new ArrayList<Person>();
+	List<Character> availChars = new ArrayList<Character>();
 	private static SquareTile[] gameboard = new SquareTile[NUM_SQUARES];
 	private static Deck deck = new Deck();
 //	This index determines the players turn, the integer refers to the index in the players list
@@ -31,7 +34,8 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
         
 	public GameEngine() 
 	{
-		for (Person p : Person.values())
+//		users.get(0).getPosition();
+		for (Character p : Character.values())
 		{
 			availChars.add(p);
 		}
@@ -79,11 +83,11 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 	{
 //		boolean unusedFound = false;
 //		Player player = null;
-//		for (Person p : Person.values())
+//		for (Character p : Character.values())
 //		{
 //			if (!unusedFound)
 //			{
-//				player = getPlayerFromPerson(p);
+//				player = getPlayerFromCharacter(p);
 //				if (player == null)
 //				{
 //					unusedFound = true;
@@ -98,8 +102,8 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		synchronized (availChars) {
 			int rand = (int) (Math.random() * availChars.size());
 			player = new Player(availChars.get(rand).getName());
-	//		In case there are race conditions, remove the actual person from the list without using index
-			availChars.remove(player.getPerson());
+	//		In case there are race conditions, remove the actual Character from the list without using index
+			availChars.remove(player.getCharacter());
 		}
 		player.setUsername(username);
 		user.setPlayer(player);
@@ -109,11 +113,11 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		
 	}
 	
-	private Player getPlayerFromPerson(Person p)
+	private Player getPlayerFromCharacter(Character p)
 	{
 		for (UserEngine user : users)
 		{
-			if (user.getPlayer().getPerson().equals(p))
+			if (user.getPlayer().getCharacter().equals(p))
 			{
 				return user.getPlayer();
 			}
@@ -124,7 +128,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 	private void addPlayer(UserEngine u)
 	{
 //        Scarlet always goes first so make sure they are put in the front of the list 
-		if (u.getPlayer().getPerson().equals(Person.SCARLET) )
+		if (u.getPlayer().getCharacter().equals(Character.SCARLET) )
 		{
 			users.add(0, u);
 		}
@@ -150,7 +154,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
             int count = 0;
             for (UserEngine u : users) {
                 msg.setField("player"+count+"username", u.getPlayer().getUsername());
-                msg.setField("player"+count+"character", u.getPlayer().getPerson().getName());
+                msg.setField("player"+count+"character", u.getPlayer().getCharacter().getName());
                 msg.setField("player"+count+"position", u.getPosition());
                 ++count;
             }
@@ -207,7 +211,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 //	                	 		
 //	                	 		PLAYER
 //	                	 			CARDS
-//	                	 			PERSON
+//	                	 			Character
 //	                	 		CONNECTION
 //                	
 //                	Game engine
