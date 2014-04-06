@@ -162,6 +162,15 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
             
             return msg;
         }
+        
+    public UserEngine getUser(Connection connection) {
+        for (UserEngine user : users) {
+            if (user.getConnection().equals(connection)) {
+                return user;
+            }
+        }
+        return null;
+    }
 
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
@@ -196,12 +205,16 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     //TODO(naugler) sanitize client message
                     broadcast(msg);
                     break;
-//                case SUGGEST:
-//                	//decide who this connection is accusing...
-//                	Player suggestee = players.get(suggestedPlayer);
+                case SUGGEST:
+                    //loop through players (we will have to mark the message?)
+                    //get player
 //                	//tell them about it!
 //                	suggestee.getConnection().send(msg);
-//                	
+                    
+                    for (UserEngine u : users) {
+                        //don't know yet how we know which user should get the suggestion
+//                        u.suggest(Card.WHITE, Card.WHITE, Card.PLUM);
+                    }
 //                	UserEngine1		UserEngine2 		UserEngine3
 //                	 - CLIENT		 - CLIENT		 - CLIENT
 //                	 - SERVER
@@ -223,7 +236,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 //                		Player
 //                		
 //                	UserEngine game = connections.get(suggestedPlayer)
-//                	break;
+                    break;
                 default:
                     CluelessMessage error = new CluelessMessage(Type.ERROR);
                     error.setField("error", "Unknown message type "+type);

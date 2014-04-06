@@ -28,8 +28,13 @@ public enum Card {
 		this.name = name;
 		this.type = type;
 	}
-	private String type;
-	private String name;
+	private final String type;
+	private final String name;
 	public String getName(){return name;}
 	public String getType(){return type;}
+        
+        @Override
+        public String toString() {
+            return name;
+        }
 }

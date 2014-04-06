@@ -15,6 +15,10 @@ import com.blakjack.clueless.common.Connection.MessageHandler;
 import com.blakjack.clueless.gui.GameFrame;
 import com.blakjack.clueless.server.CluelessServer;
 
+/**
+ * What is this. WHY is this.
+ * @author nauglrj1
+ */
 public class UserEngine implements MessageHandler, ConnectionEventListener {
 	private Player player;
 	private Connection connection;
@@ -45,7 +49,7 @@ public class UserEngine implements MessageHandler, ConnectionEventListener {
 	{
 		return connection;
 	}
-	
+
 //	public String getUsername()
 //	{
 //		return username;
@@ -105,6 +109,14 @@ public class UserEngine implements MessageHandler, ConnectionEventListener {
               break;
           default:
       }
+  }
+  
+  public void sendToServer(CluelessMessage msg) {
+      client.send(msg);
+  }
+  
+  public void sendToClient(CluelessMessage msg) {
+      connection.send(msg);
   }
   
   public void connect(boolean startServer, boolean okOption, int port, String address, String username, GameFrame gameFrame) throws IOException,UnknownHostException {	  

@@ -36,12 +36,12 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
     private final JButton startButton = new JButton("Start Game");
     
     private final boolean startServer;
-    private final UserEngine client;
+    private final UserEngine userEngine;
     
     public LobbyDialog(boolean startServer, UserEngine client) {
         setTitle("Game Lobby");
         this.startServer = startServer;
-        this.client = client;
+        this.userEngine = client;
         initComponents();
         pack();
         client.getClient().addConnectionEventListener(new Connection.ConnectionEventListener() {
@@ -81,7 +81,7 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     CluelessMessage msg = new CluelessMessage(CluelessMessage.Type.START);
-                    client.getClient().send(msg);
+                    userEngine.getClient().send(msg);
                 }
             });
             buttonPanel.add(startButton, BorderLayout.EAST);
@@ -130,7 +130,7 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
                     JOptionPane.YES_NO_OPTION);
         }
         if (retval == JOptionPane.YES_OPTION) {
-            client.shutdown();
+            userEngine.shutdown();
             LobbyDialog.this.setVisible(false);
         }
     }
