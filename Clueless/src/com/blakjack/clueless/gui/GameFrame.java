@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 /**
@@ -35,7 +36,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     private final JTextArea log = new JTextArea();
     private final MenuItem newGame = new MenuItem("New Game");
     private final MenuItem joinGame = new MenuItem("Join Game");
-    private UserEngine userEngine = new UserEngine();
+    private final UserEngine userEngine = new UserEngine();
     
 //    /**
 //     * @param args the command line arguments
@@ -45,15 +46,15 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         GameFrame gameFrame = new GameFrame();
         gameFrame.setVisible(true);
     }
-    
+
     public GameFrame() {
         super("Clue-Less");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         initializeComponents();
+        pack();
     }
     
     private void initializeComponents() {
-        setSize(600, 400);
         setLayout(new BorderLayout());
         Menu fileMenu = new Menu("File");
         Menu helpMenu = new Menu("Help");
@@ -70,6 +71,8 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             @Override
             public void actionPerformed(ActionEvent e) {
                 connect(false);
+                //get options.
+//                userEngine.suggest();
             }
         });
         fileMenu.add(joinGame);
@@ -97,9 +100,17 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         bar.add(helpMenu);
         this.setMenuBar(bar);
         
+        JPanel leftPanel = new JPanel(new BorderLayout());
         log("Welcome to Clue-Less!");
         log.setEditable(false);
-        add(log, BorderLayout.WEST);
+        leftPanel.add(log, BorderLayout.NORTH);
+        //leftPanel.add(buttonPad, BorderLayout.CENTER);
+        //leftPanel.add(cardPanel, BoderLayout.SOUTH);
+        add(leftPanel, BorderLayout.WEST);
+        
+        add(new GameBoardPanel(), BorderLayout.CENTER);
+        
+        add(new EvidenceLocker(), BorderLayout.EAST);
     }
     
     private void connect(boolean startServer){
@@ -147,7 +158,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 log(msg.getField("error").toString());
                 break;
             case LOGIN:
-                log("Welcome user "+msg.getField("username")+"!");
+                log("Welcome user "+msg.getField("source")+"!");
                 break;
             case LOGOFF:
                 log("User "+msg.getField("username")+" has left.");
