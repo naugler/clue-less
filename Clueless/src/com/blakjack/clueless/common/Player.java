@@ -2,6 +2,7 @@ package com.blakjack.clueless.common;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Player {
 	
@@ -10,6 +11,9 @@ public class Player {
 	private Character character;
 	
 	private String username;
+	private Connection connection;
+	private int position;
+	private List<Card> cards = new ArrayList<Card>();
 	
 //	private Connection connection;
 	
@@ -111,34 +115,34 @@ public class Player {
 	{
 		
 	}
-//	public Connection getConnection()
-//	{
-//		return connection;
-//	}
-//	
-//	public void setConnection(Connection connection)
-//	{
-//		this.connection = connection;
-//	}
+	public Connection getConnection()
+	{
+		return connection;
+	}
 	
-//	public void dealCard(Card c)
-//	{
-//		cards.add(c);
-//	}
-//	
-//	public ArrayList<Card> getCards()
-//	{
-//		return cards;
-//	}
+	public void setConnection(Connection connection)
+	{
+		this.connection = connection;
+	}
 	
-//	public int getPosition()
-//	{
-//		return position;
-//	}
-//	
-//	public void setPosition(int pos)
-//	{
-//		position = pos;
-//	}
+	public void dealCard(Card c)
+	{
+		cards.add(c);
+	}
+	
+	public List<Card> getCards()
+	{
+		return cards;
+	}
+	
+	public int getPosition()
+	{
+		return position;
+	}
+	
+	public void setPosition(int pos)
+	{
+		position = pos;
+	}
 	
 }

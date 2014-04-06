@@ -9,10 +9,13 @@ import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Player.Character;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.blakjack.clueless.common.SquareTile;
+
+
 
 
 
@@ -31,7 +34,9 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 	private static Deck deck = new Deck();
 //	This index determines the players turn, the integer refers to the index in the players list
 	private static int playerTurnIndex = 0;
-        
+//	This keeps track of how many users were NOT able to refute suggestion
+    private static int offsetToSuggestTo = 1;
+    private static boolean refuted = false;
 	public GameEngine() 
 	{
 //		users.get(0).getPosition();
@@ -70,7 +75,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 			{
 				if (card != null)
 				{
-					u.dealCard(card);
+					u.getPlayer().dealCard(card);
 					card = deck.deal();
 				}
 			}
@@ -107,7 +112,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		}
 		player.setUsername(username);
 		user.setPlayer(player);
-		user.setConnection(connection);
+		user.getPlayer().setConnection(connection);
 		
 		addPlayer(user);
 		
@@ -144,7 +149,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
             message.setField("source", "server");
             message.setField("date", new Date(System.currentTimeMillis()));
             for (UserEngine u : users) {
-                u.getConnection().send(message);
+                u.getPlayer().getConnection().send(message);
             }
         }
         
@@ -155,7 +160,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
             for (UserEngine u : users) {
                 msg.setField("player"+count+"username", u.getPlayer().getUsername());
                 msg.setField("player"+count+"character", u.getPlayer().getCharacter().getName());
-                msg.setField("player"+count+"position", u.getPosition());
+                msg.setField("player"+count+"position", u.getPlayer().getPosition());
                 ++count;
             }
             msg.setField("turn", turn);
@@ -165,7 +170,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
         
     public UserEngine getUser(Connection connection) {
         for (UserEngine user : users) {
-            if (user.getConnection().equals(connection)) {
+            if (user.getPlayer().getConnection().equals(connection)) {
                 return user;
             }
         }
@@ -206,15 +211,75 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     broadcast(msg);
                     break;
                 case SUGGEST:
+                	offsetToSuggestTo = 1;
+                	refuted = false;
+                	// Get the room that the current player is in.
+                	UserEngine currPlayer = users.get(playerTurnIndex);
+                	String room = gameboard[currPlayer.getPlayer().getPosition()].getRoom();
+	            	msg.setField("room", room);
+                	
+                	// find out which try it is. (if a player was not able 
+                	// refute a suggestion, send the same message using type
+                	// "SUGGEST" with a + 1 "try" value to try the next 
+                	// player.
+	            	
+                	while (offsetToSuggestTo < 6 && refuted == false)
+                	{
+                		UserEngine suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%6); 
+		            	suggPlayer.getPlayer().getConnection().send(msg);
+		            	synchronized(this)
+		            	{
+		            		try {
+								this.wait();
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+		            	}
+                	}
+//                	if (offsetToSuggestTo < 6)
+//                	{
+//		            	UserEngine suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%6); 
+//		            	suggPlayer.getPlayer().getConnection().send(msg);
+//                	}
+                	break;
+                case RESP_SUGGEST:
+                	String card = (String) msg.getField("card");
+                	if (card == null)
+                	{
+                		offsetToSuggestTo++;
+                	}
+                	// If player refuted suggestion, send current player the card
+                	// Send the rest of the players the results. (without the card)
+                	else
+                	{
+                		refuted = true;
+                		users.get(playerTurnIndex).getPlayer().getConnection().send(msg);
+                		CluelessMessage message = new CluelessMessage(Type.RESP_SUGGEST);
+                		for (String key : msg.getFields().keySet())
+                		{
+                			if (key != "card")
+                			{
+                				message.setField(key, (Serializable) msg.getField(key));
+                			}
+                		}
+                		broadcast(message);
+                		
+                	}
+                	synchronized(this)
+                	{
+                		this.notifyAll();
+                	}
+                	break;
                     //loop through players (we will have to mark the message?)
                     //get player
 //                	//tell them about it!
 //                	suggestee.getConnection().send(msg);
                     
-                    for (UserEngine u : users) {
+//                    for (UserEngine u : users) {
                         //don't know yet how we know which user should get the suggestion
 //                        u.suggest(Card.WHITE, Card.WHITE, Card.PLUM);
-                    }
+//                    }
 //                	UserEngine1		UserEngine2 		UserEngine3
 //                	 - CLIENT		 - CLIENT		 - CLIENT
 //                	 - SERVER
@@ -236,7 +301,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 //                		Player
 //                		
 //                	UserEngine game = connections.get(suggestedPlayer)
-                    break;
+//                    break;
                 default:
                     CluelessMessage error = new CluelessMessage(Type.ERROR);
                     error.setField("error", "Unknown message type "+type);
@@ -280,7 +345,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
         if (event == ConnectionEvent.CLOSED) {
             UserEngine user = null;
             for (UserEngine u : users) {
-                if (u.getConnection() == connection) {
+                if (u.getPlayer().getConnection() == connection) {
                     user = u;
                     break;
                 }

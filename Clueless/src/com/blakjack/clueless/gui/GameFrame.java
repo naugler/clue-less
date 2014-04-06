@@ -170,6 +170,22 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             case UPDATE:
                 handleUpdate(msg);
                 break;
+            // Note: Do opposite since message is coming from the server 
+            // So when suggest comes in, we need to respond to the suggestion
+            // If the response comes in, we need to tell original user.
+            case SUGGEST:
+            	// Show suggestion message to user.  
+            	
+//            	// This method will be called in the "OK" of the suggestion
+//            	userEngine.respondToSuggestion(card, msg);
+            	break;
+            case RESP_SUGGEST:
+            	// Show resulting card if card exists and this user made suggestion
+            	
+//            	//THe suggest method will be called on the suggest button
+//            	userEngine.makeSuggestion(person, weapon);
+            	
+            	break;
             default:
                 log("Unknown message: "+msg);
         }

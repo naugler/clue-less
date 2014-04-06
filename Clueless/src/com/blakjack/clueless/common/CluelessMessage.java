@@ -21,7 +21,8 @@ public class CluelessMessage implements Serializable {
         MESSAGE,    //used for sending a message to the user
         MOVE,       //moves a player
         START,      //start the game!
-        SUGGEST,
+        SUGGEST,    //make a suggestion
+        RESP_SUGGEST, // responce to suggestion
         UPDATE      //contains the entire game state
     }
     
