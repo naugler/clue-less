@@ -28,7 +28,7 @@ public class CardPanel extends JPanel {
     ImageIcon card3Image;
     
     public CardPanel() {
-        setPreferredSize(new Dimension(100,200));
+        setPreferredSize(new Dimension(150,250));
     }
     
     public void setCards(Card newCard1, Card newCard2, Card newCard3) {

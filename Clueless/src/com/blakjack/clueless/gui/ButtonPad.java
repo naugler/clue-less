@@ -4,6 +4,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class ButtonPad extends JPanel {
@@ -22,7 +23,14 @@ public class ButtonPad extends JPanel {
     private final ActionListener buttonListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println("BURTON CLURKED");
+//            if () {
+                SuggestionPanel suggestionPanel = new SuggestionPanel(false);
+                String title = false ? "Make Accusation" : "Make Suggestion";
+                int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
+                        suggestionPanel,
+                        title,
+                        JOptionPane.OK_CANCEL_OPTION);
+//            }
         }
     };
     
