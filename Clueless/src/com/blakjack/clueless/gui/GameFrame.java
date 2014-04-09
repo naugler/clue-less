@@ -172,6 +172,16 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             // Note: Do opposite since message is coming from the server 
             // So when suggest comes in, we need to respond to the suggestion
             // If the response comes in, we need to tell original user.
+            case ACCUSE:
+            	boolean won = (boolean) msg.getField("win");
+            	if (won)
+            	{
+            		// Show appropriate message
+            	}
+            	else
+            	{
+            		// Show appropriate message
+            	}
             case SUGGEST:
             	// Show suggestion message to user.  
                 
@@ -183,7 +193,17 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
 
 //            	//THe suggest method will be called on the suggest button
 //            	userEngine.makeSuggestion(person, weapon);
-                break;
+            	break;
+            case MOVE:
+            	// move the piece to the correct place in the graphics
+            	// alert player in log box
+            	break;
+            case END_TURN:
+            	// turn off all buttons
+            	break;
+            case NEXT_TURN:
+            	// turn on appropriate buttons
+            	break;
             default:
                 log("Unknown message: " + msg);
         }
