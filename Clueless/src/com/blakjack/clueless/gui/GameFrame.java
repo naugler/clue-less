@@ -204,6 +204,16 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             case NEXT_TURN:
             	// turn on appropriate buttons
             	break;
+            case MOVE:
+            	// move the piece to the correct place in the graphics
+            	// alert player in log box
+            	break;
+            case END_TURN:
+            	// turn off all buttons
+            	break;
+            case NEXT_TURN:
+            	// turn on appropriate buttons
+            	break;
             default:
                 log("Unknown message: " + msg);
         }
