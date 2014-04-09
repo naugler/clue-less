@@ -13,6 +13,7 @@ import com.blakjack.clueless.common.Connection.MessageHandler;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Connection.ConnectionEventListener;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
@@ -34,6 +35,8 @@ import javax.swing.JTextArea;
 public class GameFrame extends JFrame implements MessageHandler, ConnectionEventListener {
     
     private final JTextArea log = new JTextArea();
+    private final ButtonPad buttonPad = new ButtonPad();
+    private final CardPanel cardPanel = new CardPanel();
     private final MenuItem newGame = new MenuItem("New Game");
     private final MenuItem joinGame = new MenuItem("Join Game");
     private final UserEngine userEngine = new UserEngine();
@@ -103,9 +106,10 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         JPanel leftPanel = new JPanel(new BorderLayout());
         log("Welcome to Clue-Less!");
         log.setEditable(false);
+        log.setPreferredSize(new Dimension(100,200));
         leftPanel.add(log, BorderLayout.NORTH);
-        //leftPanel.add(buttonPad, BorderLayout.CENTER);
-        //leftPanel.add(cardPanel, BoderLayout.SOUTH);
+        leftPanel.add(buttonPad, BorderLayout.CENTER);
+        leftPanel.add(cardPanel, BorderLayout.SOUTH);
         add(leftPanel, BorderLayout.WEST);
         
         add(new GameBoardPanel(), BorderLayout.CENTER);
