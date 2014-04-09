@@ -124,10 +124,17 @@ public class UserEngine {
   public void makeSuggestion(String person, String weapon )
   {
 	  CluelessMessage message = new CluelessMessage(Type.SUGGEST);
-//      message.setField("source", "server");
-//      message.setField("date", new Date(System.currentTimeMillis()));
       message.setField("person", person);
       message.setField("weapon", weapon);
+      sendToServer(message);
+  }
+  
+  public void accuse(String person, String weapon, String room)
+  {
+	  CluelessMessage message = new CluelessMessage(Type.SUGGEST);
+      message.setField("person", person);
+      message.setField("weapon", weapon);
+      message.setField("room", room);
       sendToServer(message);
   }
   
@@ -140,8 +147,23 @@ public class UserEngine {
 	  message.setField("card", card);
 	  sendToServer(message);
   }
+  
+  /*
+   * includes UP, DOWN, LEFT, RIGHT, and SECRET
+   */
+  public void move(String direction)
   {
+	  // If direction is allowed
+	  CluelessMessage msg = new CluelessMessage(Type.MOVE);
+	  msg.setField("direction", direction);
+	  sendToServer(msg);
 	  
+  }
+  
+  public void endTurn()
+  {
+	  CluelessMessage msg = new CluelessMessage(Type.END_TURN);
+	  sendToServer(msg);
   }
   
   public void sendToServer(CluelessMessage msg) {

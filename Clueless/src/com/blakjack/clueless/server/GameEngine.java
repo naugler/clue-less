@@ -210,13 +210,29 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     //TODO(naugler) sanitize client message
                     broadcast(msg);
                     break;
+                case ACCUSE:
+                	String character = (String) msg.getField("character");
+                	String weapon = (String) msg.getField("weapon");
+                	String room = (String) msg.getField("room");
+                    Card charact = Card.valueOf(character);
+                    Card weap = Card.valueOf(weapon);
+                    Card rm = Card.valueOf(room);
+                    boolean won = false;
+                    if ( deck.getCrimeCard(0).equals(charact) && deck.getCrimeCard(1).equals(weap) && deck.getCrimeCard(2).equals(rm))
+                    {
+                    	won = true;
+                    }
+                    msg.setField("win", won);
+                    msg.setField("name", users.get(playerTurnIndex).getPlayer().getUsername());
+                    broadcast(msg);
+                    break;
                 case SUGGEST:
                 	offsetToSuggestTo = 1;
                 	refuted = false;
                 	// Get the room that the current player is in.
                 	UserEngine currPlayer = users.get(playerTurnIndex);
-                	String room = gameboard[currPlayer.getPlayer().getPosition()].getRoom();
-	            	msg.setField("room", room);
+                	String rooms = gameboard[currPlayer.getPlayer().getPosition()].getRoom();
+	            	msg.setField("room", rooms);
                 	
                 	// find out which try it is. (if a player was not able 
                 	// refute a suggestion, send the same message using type
@@ -271,37 +287,50 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 		this.notifyAll();
                 	}
                 	break;
-                    //loop through players (we will have to mark the message?)
-                    //get player
-//                	//tell them about it!
-//                	suggestee.getConnection().send(msg);
-                    
-//                    for (UserEngine u : users) {
-                        //don't know yet how we know which user should get the suggestion
-//                        u.suggest(Card.WHITE, Card.WHITE, Card.PLUM);
-//                    }
-//                	UserEngine1		UserEngine2 		UserEngine3
-//                	 - CLIENT		 - CLIENT		 - CLIENT
-//                	 - SERVER
-//                	 	GAMEENGINE
-//	                	 	USER*
-//	                	 		getValidmoves()
-//	                	 		
-//	                	 		PLAYER
-//	                	 			CARDS
-//	                	 			Character
-//	                	 		CONNECTION
-//                	
-//                	Game engine
-//               			list userEngines
-//               	
-//                	////
-//                	UserEngine (user engine???)
-//                		Connection
-//                		Player
-//                		
-//                	UserEngine game = connections.get(suggestedPlayer)
-//                    break;
+                case MOVE:
+                	String direction = (String) msg.getField("direction");
+                	Player curPlayer = users.get(playerTurnIndex).getPlayer();
+                	int currPos = curPlayer.getPosition();
+                	int newPos = currPos;
+                	// If move is allowed for current player
+                	// TODO: Do CHECK HERE
+                	switch (direction)
+                	{
+                	case "UP":
+                		// the check for if it is possible happens before we set position
+                		newPos = currPos - 5; 
+                		break;
+                	case "DOWN":
+                		newPos = currPos + 5;
+                		break;
+                	case "LEFT":
+                		newPos = currPos - 1;
+                		break;
+                	case "RIGHT":
+                		newPos = currPos + 1;
+                		break;
+                	case "SECRET":
+                		newPos = Math.abs(currPos - 24);
+                		break;
+                	}
+                	
+                	//Tell everyone that player moved
+                	CluelessMessage message = new CluelessMessage(Type.MOVE);
+                	message.setField("player", curPlayer.getUsername());
+                	message.setField("position", newPos);
+                	broadcast(message);
+                		
+                	break;
+                case END_TURN:
+                	Player cPlayer = users.get(playerTurnIndex).getPlayer();
+                	Player nextPlayer = users.get(++playerTurnIndex).getPlayer();
+                	//tell client to turn off all buttons
+                	cPlayer.getConnection().send(msg);
+                	// tell next player that it is thier turn
+                	CluelessMessage msage = new CluelessMessage(Type.NEXT_TURN);
+                	nextPlayer.getConnection().send(msage);
+                	
+                	
                 default:
                     CluelessMessage error = new CluelessMessage(Type.ERROR);
                     error.setField("error", "Unknown message type "+type);
