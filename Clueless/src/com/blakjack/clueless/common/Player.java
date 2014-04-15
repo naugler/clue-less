@@ -2,20 +2,24 @@ package com.blakjack.clueless.common;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Player {
 	
 //	private int position = -1;
 	
-	private Person person;
+	private Character character;
 	
 	private String username;
+	private Connection connection;
+	private int position;
+	private List<Card> cards = new ArrayList<Card>();
 	
 //	private Connection connection;
 	
 //	private ArrayList<Card> cards = new ArrayList<Card>();
 	
-	public enum Person {
+	public enum Character {
 		MUSTARD("Colonel Mustard", Color.yellow),
 		WHITE("Mrs. White", Color.white),
 		PLUM("Professor Plum", new Color(255,0,255)), //Purple 
@@ -23,7 +27,7 @@ public class Player {
 		GREEN("Mr. Green", Color.green),
 		SCARLET("Miss Scarlet", Color.red);
 		
-		private Person(String name, Color color)
+		private Character(String name, Color color)
 		{
 			this.name = name;
 			this.color = color;
@@ -32,9 +36,9 @@ public class Player {
 		private String name;
 		public String getName(){return name;}
 		public Color getColor(){return color;}
-		public static Person getPerson(Color color)
+		public static Character getCharacter(Color color)
 		{
-			for (Person p : Person.values())
+			for (Character p : Character.values())
 			{
 				if (p.color.equals( color))
 				{
@@ -43,9 +47,9 @@ public class Player {
 			}
 			return null;
 		}
-		public static Person getPerson(String name)
+		public static Character getCharacter(String name)
 		{
-			for (Person p : Person.values())
+			for (Character p : Character.values())
 			{
 				if (p.name == name)
 				{
@@ -58,17 +62,17 @@ public class Player {
 	}
 	public Player( Color color )
 	{
-		person = Person.getPerson(color);
+		character = Character.getCharacter(color);
 	}
 	
 	public Player( String name )
 	{
-		person = Person.getPerson(name);
+		character = Character.getCharacter(name);
 	}
 	
-	public Person getPerson()
+	public Character getCharacter()
 	{
-		return person;
+		return character;
 	}
 	
 	public String getUsername()
@@ -111,34 +115,34 @@ public class Player {
 	{
 		
 	}
-//	public Connection getConnection()
-//	{
-//		return connection;
-//	}
-//	
-//	public void setConnection(Connection connection)
-//	{
-//		this.connection = connection;
-//	}
+	public Connection getConnection()
+	{
+		return connection;
+	}
 	
-//	public void dealCard(Card c)
-//	{
-//		cards.add(c);
-//	}
-//	
-//	public ArrayList<Card> getCards()
-//	{
-//		return cards;
-//	}
+	public void setConnection(Connection connection)
+	{
+		this.connection = connection;
+	}
 	
-//	public int getPosition()
-//	{
-//		return position;
-//	}
-//	
-//	public void setPosition(int pos)
-//	{
-//		position = pos;
-//	}
+	public void dealCard(Card c)
+	{
+		cards.add(c);
+	}
+	
+	public List<Card> getCards()
+	{
+		return cards;
+	}
+	
+	public int getPosition()
+	{
+		return position;
+	}
+	
+	public void setPosition(int pos)
+	{
+		position = pos;
+	}
 	
 }

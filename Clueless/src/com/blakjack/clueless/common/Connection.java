@@ -53,8 +53,12 @@ public class Connection {
             public void run() {
                 while(!Thread.interrupted()) {
                     try {
-                        CluelessMessage msg = (CluelessMessage)reader.readObject();
-                        fireMessage(msg);
+                        Object obj = reader.readObject();
+                        if (obj instanceof CluelessMessage) {
+                            fireMessage((CluelessMessage)obj);
+                        } else {
+                            System.err.println("Unknown message: "+obj);
+                        }
                     } catch (IOException ex) {
                         System.err.println(ex.getMessage());
                         close();

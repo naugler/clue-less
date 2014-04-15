@@ -22,5 +22,8 @@ public class SquareTile {
 			room = RoomType.BLANK;
 		}
 	}
+	public String getRoom(){
+		return room.name();
+	}
 
 }

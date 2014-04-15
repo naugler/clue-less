@@ -7,7 +7,6 @@
 package com.blakjack.clueless.client;
 
 import com.blakjack.clueless.common.CluelessMessage;
-import com.blakjack.clueless.common.CluelessMessage.Type;
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.MessageHandler;
 import java.io.IOException;
@@ -39,19 +38,20 @@ public class CluelessClient {
         SocketFactory socketFactory = SocketFactory.getDefault();
         Socket clientSocket = socketFactory.createSocket(address, port);
         connection.open(clientSocket);
-        CluelessMessage login = new CluelessMessage(Type.LOGIN);
-        login.setField("source", username);
-        send(login);
     }
     
     public void stop() {
-        System.out.print("Shutting down client...");
+        System.out.println("Shutting down client...");
         connection.close();
         System.out.println("done");
     }
     
     public void addMessageHandler(MessageHandler handler) {
         connection.addMessageHandler(handler);
+    }
+    
+    public void removeMessageHandler(MessageHandler handler) {
+        connection.removeMessageHandler(handler);
     }
     
     public void addConnectionEventListener(Connection.ConnectionEventListener listener) {
@@ -63,5 +63,8 @@ public class CluelessClient {
         message.setField("date", new Date(System.currentTimeMillis()));
         connection.send(message);
     }
-    
+
+    public String getUsername() {
+        return username;
+    }
 }

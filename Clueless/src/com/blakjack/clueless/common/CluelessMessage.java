@@ -20,7 +20,13 @@ public class CluelessMessage implements Serializable {
         LOGOFF,     //when a player goes away - generally originates at server
         MESSAGE,    //used for sending a message to the user
         MOVE,       //moves a player
+        END_TURN,    //ends player turn
+        NEXT_TURN,  // starts the next player's turn
+        START,      //start the game!
+        SUGGEST,    //make a suggestion
+        RESP_SUGGEST, // responce to suggestion
         UPDATE      //contains the entire game state
+        , ACCUSE
     }
     
     private final Map<String, Serializable> fields = new HashMap<String, Serializable>();

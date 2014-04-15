@@ -10,6 +10,7 @@ import com.blakjack.clueless.common.Connection;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,16 +46,27 @@ public class SocketAcceptor implements Runnable {
         }
     }
     
+    public void close() {
+        try {
+            serverSocket.close();
+        } catch (IOException ex) {
+            System.err.println("Failed to close server socket");
+            ex.printStackTrace(System.err);
+        }
+    }
+    
     @Override
     public void run() {
         System.out.println("Accepting connections on "+serverSocket.getInetAddress().getHostAddress()+":"+serverSocket.getLocalPort()+" ...");
-        while(true) {
+        while(!serverSocket.isClosed()) {
             try {
                 Socket newSocket = serverSocket.accept();
                 Connection newConnection = new Connection();
                 newConnection.open(newSocket);
                 fireSocketAcceptorEvent(newConnection);
-            } catch (Exception ex) {
+            } catch (SocketException ex) {
+                //closing time.
+            } catch (IOException ex) {
                 System.err.println("Failed to open connection");
                 ex.printStackTrace(System.err);
             }

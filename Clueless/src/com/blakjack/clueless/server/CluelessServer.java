@@ -8,13 +8,9 @@ package com.blakjack.clueless.server;
 
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
-import com.blakjack.clueless.common.Connection.ConnectionEventListener;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This class starts up a socket acceptor and handles new connections
@@ -24,39 +20,47 @@ import java.util.Map;
 public class CluelessServer {
     
     private final int port;
-    private Thread acceptorThread = null;
+    private SocketAcceptor socketAcceptor;
     private final GameEngine game = new GameEngine();
     
-    private final Map<String, Connection> connections = new HashMap<String, Connection>();
+    private final List<Connection> connections = new ArrayList<Connection>();
     
     public CluelessServer(int port) {
         this.port = port;
     }
     
     public void start() throws IOException{
-        SocketAcceptor socketAcceptor = new SocketAcceptor(port);
+        socketAcceptor = new SocketAcceptor(port);
         socketAcceptor.addSocketAcceptorListener(new SocketAcceptor.SocketAcceptorListener() {
             @Override
             public void event(Connection connection) {
                 handleConnection(connection);
             }
         });
-        acceptorThread = new Thread(socketAcceptor);
-        acceptorThread.start();
+        new Thread(socketAcceptor).start();
     }
     
     public void stop() {
-        System.out.print("Shutting down server...");
-        if (acceptorThread != null) {
-            acceptorThread.interrupt();
+        System.out.println("Shutting down server...");
+        if (socketAcceptor != null) {
+            socketAcceptor.close();
         }
-        for (Connection connection : connections.values()) {
+        for (Connection connection : connections) {
             connection.close();
         }
         System.out.println("done");
     }
     
     private void handleConnection(Connection connection) {
+        connections.add(connection);
+        connection.addConnectionEventListener(new Connection.ConnectionEventListener() {
+            @Override
+            public void event(Connection connection, Connection.ConnectionEvent event) {
+                if (event == ConnectionEvent.CLOSED) {
+                    connections.remove(connection);
+                }
+            }
+        });
         connection.addConnectionEventListener(game);
         connection.addMessageHandler(game);
     }

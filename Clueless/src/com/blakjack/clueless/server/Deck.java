@@ -63,5 +63,17 @@ public class Deck {
 		}
 		return null;
 	}
+	/*
+	 * this is the only method here specific for our application
+	 */
+	public Card getCrimeCard(int index)
+	{
+		
+		if (index >=0 && index <4)
+		{
+			return cards[index];
+		}
+		return null;
+	}
 
 }
