@@ -29,13 +29,16 @@ public class CardPanel extends JPanel {
     
     public CardPanel() {
         setPreferredSize(new Dimension(150,250));
+        
+        //just some in-place testing...
+        setCards(Card.MUSTARD, Card.GREEN, Card.PEACOCK);
     }
     
     public void setCards(Card newCard1, Card newCard2, Card newCard3) {
         //load images for cards
-        card1Image = new ImageIcon(getClass().getClassLoader().getResource(newCard1+".png"));
-        card2Image = new ImageIcon(getClass().getClassLoader().getResource(newCard2+".png"));
-        card3Image = new ImageIcon(getClass().getClassLoader().getResource(newCard3+".png"));
+        card1Image = new ImageIcon(getClass().getClassLoader().getResource("card_"+newCard1.name().toLowerCase()+".png"));
+        card2Image = new ImageIcon(getClass().getClassLoader().getResource("card_"+newCard2.name().toLowerCase()+".png"));
+        card3Image = new ImageIcon(getClass().getClassLoader().getResource("card_"+newCard3.name().toLowerCase()+".png"));
     }
 
     @Override
