@@ -1,11 +1,12 @@
 package com.blakjack.clueless.common;
 
-import com.blakjack.clueless.server.GameEngine;
+import com.blakjack.clueless.client.UserEngine;
+import java.util.List;
 
 public class Movement 
    {
       //shortcut move is always valid for corners
-      public boolean isShortcutValid(SquareTile[] board, Player player);
+      public boolean isShortcutValid(SquareTile[] board, Player player)
       {
          int position = player.getPosition();
          if ((position == 0) || (position == 4) || (position == 20) || (position == 24))
@@ -15,7 +16,7 @@ public class Movement
       }
       
      //left move is valid for horizontal hallways and non-leftmost rooms
-      public boolean isLeftValid(SquareTile[] board, List<UserEngine> playerList, Player player);
+      public boolean isLeftValid(SquareTile[] board, List<UserEngine> playerList, Player player)
       {
          int position = player.getPosition();
          
@@ -38,9 +39,9 @@ public class Movement
             
             int num = playerList.size();
             
-            for (i = 0; i < size; i++)
+            for (int i = 0; i < num; i++)
             {
-               int j = playerList<i>.getPosition();
+               int j = playerList.get(i).getPlayer().getPosition();
                if (j == position - 1)
                   emptyhall = false;
             }
@@ -72,9 +73,9 @@ public class Movement
             
             int num = playerList.size();
             
-            for (i = 0; i < size; i++)
+            for (int i = 0; i < num; i++)
             {
-               int j = playerList<i>.getPosition();
+               int j = playerList.get(i).getPlayer().getPosition();
                if (j == position + 1)
                   emptyhall = false;
             }
@@ -106,9 +107,9 @@ public class Movement
             
             int num = playerList.size();
             
-            for (i = 0; i < size; i++)
+            for (int i = 0; i < num; i++)
             {
-               int j = playerList<i>.getPosition();
+               int j = playerList.get(i).getPlayer().getPosition();
                if (j == position - 5)
                   emptyhall = false;
             }
@@ -140,15 +141,14 @@ public class Movement
             
             int num = playerList.size();
             
-            for (i = 0; i < size; i++)
+            for (int i = 0; i < num; i++)
             {
-               int j = playerList<i>.getPosition();
+               int j = playerList.get(i).getPlayer().getPosition();
                if (j == position + 5)
                   emptyhall = false;
             }
                return emptyhall;
          }  
       }
-	}
 	
 }
