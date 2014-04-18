@@ -5,6 +5,17 @@ import java.util.List;
 
 public class Movement 
    {
+      public boolean isShortcutValid(GameBoard board, Player player)
+      {
+         Room room = player.getRoom();
+         Room sc = room.getShortcut();
+         if (room.getShortcut() == null)
+            return false;
+         else return true;
+         
+      }
+      
+      
       //shortcut move is always valid for corners
       public boolean isShortcutValid(SquareTile[] board, Player player)
       {

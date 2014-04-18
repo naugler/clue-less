@@ -15,6 +15,14 @@ public class Player {
 	private int position;
 	private List<Card> cards = new ArrayList<Card>();
 	
+   //for Room class, if we use it
+   private Room room;
+   
+   public Room getRoom()
+   {
+      return room;
+   }
+   
 //	private Connection connection;
 	
 //	private ArrayList<Card> cards = new ArrayList<Card>();
