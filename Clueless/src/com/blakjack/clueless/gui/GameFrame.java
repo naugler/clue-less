@@ -34,12 +34,12 @@ import javax.swing.JTextArea;
 public class GameFrame extends JFrame implements MessageHandler, ConnectionEventListener {
 
     private final JTextArea log = new JTextArea();
-    private final ButtonPad buttonPad = new ButtonPad();
+    
     private final CardPanel cardPanel = new CardPanel();
     private final MenuItem newGame = new MenuItem("New Game");
     private final MenuItem joinGame = new MenuItem("Join Game");
     private final UserEngine userEngine = new UserEngine();
-
+    private final ButtonPad buttonPad = new ButtonPad(userEngine);
 //    /**
 //     * @param args the command line arguments
 //     */
@@ -183,6 +183,8 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             		// Show appropriate message
             	}
             case SUGGEST:
+            	System.out.println("You are being asked to respond to suggestion");
+            	System.out.println(msg);
             	// Show suggestion message to user.  
                 
 //            	// This method will be called in the "OK" of the suggestion
@@ -195,6 +197,9 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
 //            	userEngine.makeSuggestion(person, weapon);
             	break;
             case MOVE:
+            	String player = (String) msg.getField("player");
+            	int pos = (int) msg.getField("position");
+            	System.out.println("Player " + player + " new position " + pos + "if up should be -6" );
             	// move the piece to the correct place in the graphics
             	// alert player in log box
             	break;

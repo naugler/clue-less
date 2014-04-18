@@ -25,8 +25,8 @@ public class CluelessMessage implements Serializable {
         START,      //start the game!
         SUGGEST,    //make a suggestion
         RESP_SUGGEST, // responce to suggestion
-        UPDATE      //contains the entire game state
-        , ACCUSE
+        UPDATE,      //contains the entire game state
+        ACCUSE
     }
     
     private final Map<String, Serializable> fields = new HashMap<String, Serializable>();
