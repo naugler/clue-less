@@ -3,6 +3,7 @@ package com.blakjack.clueless.server;
 import com.blakjack.clueless.client.UserEngine;
 import com.blakjack.clueless.common.Card;
 import com.blakjack.clueless.common.CluelessMessage;
+import com.blakjack.clueless.common.Movement;
 import com.blakjack.clueless.common.Player;
 import com.blakjack.clueless.common.CluelessMessage.Type;
 import com.blakjack.clueless.common.Connection;
@@ -11,9 +12,12 @@ import com.blakjack.clueless.common.Player.Character;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.blakjack.clueless.common.SquareTile;
+
+
 
 
 
@@ -115,6 +119,10 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		user.getPlayer().setConnection(connection);
 		
 		addPlayer(user);
+//		// Tell the gameFrame/userengine what the new player is
+//		CluelessMessage msg = new CluelessMessage(Type.SET_PLAYER);
+//		msg.setField("username", username);
+//		msg.setField("connection", connection);
 		
 	}
 	
@@ -179,6 +187,9 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
+    	// This is a message that may be needed to pass along a different message
+    	// Was having problems instantiating multiple messages in different case values...
+    		CluelessMessage message;
             Type type = (Type)msg.getField("type");
             switch(type) {
                 case LOGIN:
@@ -209,6 +220,11 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 case START:
                     //TODO(naugler) sanitize client message
                     broadcast(msg);
+                    playerTurnIndex = 0;
+                    List<String> buttons = getEnabledButtons();
+                    message = new CluelessMessage(Type.NEXT_TURN);
+                    message.setField("buttons", (Serializable) buttons);
+                    users.get(playerTurnIndex).getPlayer().getConnection().send(message);
                     break;
                 case ACCUSE:
                 	String character = (String) msg.getField("character");
@@ -227,8 +243,10 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     broadcast(msg);
                     break;
                 case SUGGEST:
+                	// make sure to move the player who is the character to the room
                 	offsetToSuggestTo = 1;
                 	refuted = false;
+                	System.out.println("IN Game Engine first time!!");
                 	// Get the room that the current player is in.
                 	UserEngine currPlayer = users.get(playerTurnIndex);
                 	String rooms = gameboard[currPlayer.getPlayer().getPosition()].getRoom();
@@ -239,9 +257,11 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	// "SUGGEST" with a + 1 "try" value to try the next 
                 	// player.
 	            	
-                	while (offsetToSuggestTo < 6 && refuted == false)
+                	while (offsetToSuggestTo < users.size() && refuted == false)
                 	{
                 		UserEngine suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%6); 
+                		System.out.println("Asking suggested Player " + suggPlayer.getPlayer().getUsername());
+                		System.out.println(msg);
 		            	suggPlayer.getPlayer().getConnection().send(msg);
 		            	synchronized(this)
 		            	{
@@ -271,7 +291,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	{
                 		refuted = true;
                 		users.get(playerTurnIndex).getPlayer().getConnection().send(msg);
-                		CluelessMessage message = new CluelessMessage(Type.RESP_SUGGEST);
+                		message = new CluelessMessage(Type.RESP_SUGGEST);
                 		for (String key : msg.getFields().keySet())
                 		{
                 			if (key != "card")
@@ -288,7 +308,9 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	}
                 	break;
                 case MOVE:
+                	
                 	String direction = (String) msg.getField("direction");
+                	System.out.println( "in GAME ENGINE direction " + direction);
                 	Player curPlayer = users.get(playerTurnIndex).getPlayer();
                 	int currPos = curPlayer.getPosition();
                 	int newPos = currPos;
@@ -315,20 +337,21 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	}
                 	
                 	//Tell everyone that player moved
-                	CluelessMessage message = new CluelessMessage(Type.MOVE);
+                	message = new CluelessMessage(Type.MOVE);
                 	message.setField("player", curPlayer.getUsername());
                 	message.setField("position", newPos);
                 	broadcast(message);
                 		
                 	break;
                 case END_TURN:
-                	Player cPlayer = users.get(playerTurnIndex).getPlayer();
-                	Player nextPlayer = users.get(++playerTurnIndex).getPlayer();
-                	//tell client to turn off all buttons
-                	cPlayer.getConnection().send(msg);
-                	// tell next player that it is thier turn
-                	CluelessMessage msage = new CluelessMessage(Type.NEXT_TURN);
-                	nextPlayer.getConnection().send(msage);
+                	playerTurnIndex = (playerTurnIndex + 1 ) % users.size();
+                	Player nextPlayer = users.get(playerTurnIndex).getPlayer();
+                	// tell next player that it is their turn
+                	// tell game frame which moves are valid
+                	message = new CluelessMessage(Type.NEXT_TURN);
+                	List<String> button = getEnabledButtons();
+                	message.setField("buttons", (Serializable) button);
+                	nextPlayer.getConnection().send(message);
                 	
                 	
                 default:
@@ -361,13 +384,42 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
   * 
   */
          
-        //do something
-//        String type = message.getField("TYPE");
-//        if (type.equalsIgnoreCase("STARTGAME")) {
-            //set player turns, cards, solution whatever,
-            //notify first player that their turn has started.
-//        }
-    }    
+        
+    }   
+    
+    private List<String> getEnabledButtons()
+    {
+    	Player nextPlayer = users.get(playerTurnIndex).getPlayer();
+    	// tell next player that it is their turn
+    	// tell game frame which moves are valid
+    	List<String> buttons = new LinkedList<>();
+    	if (Movement.isDownValid(gameboard, users, nextPlayer))
+    	{
+    		buttons.add("DOWN");
+    	}
+    	if (Movement.isLeftValid(gameboard, users, nextPlayer))
+    	{
+    		buttons.add("LEFT");
+    	}
+    	if (Movement.isRightValid(gameboard, users, nextPlayer))
+    	{
+    		buttons.add("RIGHT");
+    	}
+    	if (Movement.isUpValid(gameboard, users, nextPlayer))
+    	{
+    		buttons.add("UP");
+    	}
+    	if (Movement.isShortcutValid(gameboard, nextPlayer))
+    	{
+    		buttons.add("SECRET");
+    	}
+    	// TODO: need to check for suggestion
+    	buttons.add("SUGGEST");
+    	// Once it is a persons turn they can accuse until they hit end turn
+    	buttons.add("ENDTURN");
+    	buttons.add("ACCUSE");
+    	return buttons;
+    }
 
     @Override
     public void event(Connection connection, Connection.ConnectionEvent event) {

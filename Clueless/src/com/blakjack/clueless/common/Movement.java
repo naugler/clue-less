@@ -5,11 +5,11 @@ import java.util.List;
 
 public class Movement 
    {
-      public boolean isShortcutValid(GameBoard board, Player player)
+      public static boolean isShortcutValid(GameBoard board, Player player)
       {
          Room room = player.getRoom();
          Room sc = room.getShortcut();
-         if (room.getShortcut() == null)
+         if (sc.getShortcut() == null)
             return false;
          else return true;
          
@@ -17,7 +17,7 @@ public class Movement
       
       
       //shortcut move is always valid for corners
-      public boolean isShortcutValid(SquareTile[] board, Player player)
+      public static boolean isShortcutValid(SquareTile[] board, Player player)
       {
          int position = player.getPosition();
          if ((position == 0) || (position == 4) || (position == 20) || (position == 24))
@@ -27,7 +27,7 @@ public class Movement
       }
       
      //left move is valid for horizontal hallways and non-leftmost rooms
-      public boolean isLeftValid(SquareTile[] board, List<UserEngine> playerList, Player player)
+      public static boolean isLeftValid(SquareTile[] board, List<UserEngine> playerList, Player player)
       {
          int position = player.getPosition();
          
@@ -61,7 +61,7 @@ public class Movement
          
       }
       
-      public boolean isRightValid(SquareTile[] board, List<UserEngine> playerList, Player player)
+      public static boolean isRightValid(SquareTile[] board, List<UserEngine> playerList, Player player)
       {
          int position = player.getPosition();
          
@@ -95,7 +95,7 @@ public class Movement
          
       }
       
-      public boolean isUpValid(SquareTile[] board, List<UserEngine> playerList, Player player)
+      public static boolean isUpValid(SquareTile[] board, List<UserEngine> playerList, Player player)
       {
          int position = player.getPosition();
          
@@ -129,7 +129,7 @@ public class Movement
          }
       }
       
-      public boolean isDownValid(SquareTile[] board, List<UserEngine> playerList, Player player)
+      public static boolean isDownValid(SquareTile[] board, List<UserEngine> playerList, Player player)
       {
          int position = player.getPosition();
          

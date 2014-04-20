@@ -23,24 +23,24 @@ public class ButtonPad extends JPanel {
         }
     }
     
-    private final ActionListener buttonListener = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-//            if () {
-                SuggestionPanel suggestionPanel = new SuggestionPanel(false);
-                String title = false ? "Make Accusation" : "Make Suggestion";
-                int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
-                        suggestionPanel,
-                        title,
-                        JOptionPane.OK_CANCEL_OPTION);
-                if (retval == JOptionPane.OK_OPTION)
-                {
-                	System.out.println("Button pressed by this player");
-                	userEngine.makeSuggestion(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName());
-                }
-//            }
-        }
-    };
+//    private final ActionListener buttonListener = new ActionListener() {
+//        @Override
+//        public void actionPerformed(ActionEvent e) {
+////            if () {
+//                SuggestionPanel suggestionPanel = new SuggestionPanel(false);
+//                String title = false ? "Make Accusation" : "Make Suggestion";
+//                int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
+//                        suggestionPanel,
+//                        title,
+//                        JOptionPane.OK_CANCEL_OPTION);
+//                if (retval == JOptionPane.OK_OPTION)
+//                {
+//                	System.out.println("Button pressed by this player");
+//                	userEngine.makeSuggestion(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName());
+//                }
+////            }
+//        }
+//    };
     
     private final Button UP = new Button(new ActionListener() {
     	@Override
@@ -67,8 +67,38 @@ public class ButtonPad extends JPanel {
     		userEngine.move("LEFT");
     	}
     });
-    private final Button ACCUSE = new Button(buttonListener);
-    private final Button SUGGEST = new Button(buttonListener);
+    private final Button ACCUSE = new Button(new ActionListener() {
+    	@Override
+    	public void actionPerformed(ActionEvent e) {
+    		SuggestionPanel suggestionPanel = new SuggestionPanel();
+            String title = "Make Accusation";
+            int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
+                    suggestionPanel,
+                    title,
+                    JOptionPane.OK_CANCEL_OPTION);
+            if (retval == JOptionPane.OK_OPTION)
+            {
+            	System.out.println("Button pressed by this player");
+            	userEngine.accuse(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName(), suggestionPanel.getRoom().getName());
+            }
+    	}
+    });
+    private final Button SUGGEST = new Button(new ActionListener() {
+    	@Override
+    	public void actionPerformed(ActionEvent e) {
+    		SuggestionPanel suggestionPanel = new SuggestionPanel(userEngine.getPlayer().getPosition());
+            String title = "Make Suggestion";
+            int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
+                    suggestionPanel,
+                    title,
+                    JOptionPane.OK_CANCEL_OPTION);
+            if (retval == JOptionPane.OK_OPTION)
+            {
+            	System.out.println("Button pressed by this player");
+            	userEngine.makeSuggestion(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName());
+            }
+    	}
+    });
     private final Button SECRET = new Button(new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
@@ -86,7 +116,60 @@ public class ButtonPad extends JPanel {
         super();
         userEngine = client;
         initComponents();
+        enableAll(false);
     }
+    
+    public void enableButton(String button, boolean enable)
+    {
+    	Button b = null;
+    	switch (button)
+    	{
+    	case "UP":
+    		b = UP;
+    		break;
+    	case "DOWN":
+    		b = DOWN;
+    		break;
+    	case "LEFT":
+    		b = LEFT;
+    		break;
+    	case "RIGHT":
+    		b = RIGHT;
+    		break;
+    	case "SECRET":
+    		b = SECRET;
+    		break;
+    	case "ENDTURN":
+    		b = ENDTURN;
+    		break;
+    	case "ACCUSE":
+    		b = ACCUSE;
+    		break;
+    	case "SUGGEST":
+    		b = SUGGEST;
+    		break;
+    	default:
+    		System.out.println("ERROR: That button does not exist!!!!");
+    	}
+    	if (b != null)
+    	{
+    		b.getButton().setEnabled(enable);
+    	}
+    }
+    
+    public void enableAll(boolean enable)
+    {
+    	ACCUSE.getButton().setEnabled(enable);
+    	DOWN.getButton().setEnabled(enable);
+    	ENDTURN.getButton().setEnabled(enable);
+    	LEFT.getButton().setEnabled(enable);
+    	RIGHT.getButton().setEnabled(enable);
+    	SECRET.getButton().setEnabled(enable);
+    	SUGGEST.getButton().setEnabled(enable);
+    	UP.getButton().setEnabled(enable);
+    }
+    
+    
         
     private void initComponents() {
         setLayout(new GridLayout(3,3));

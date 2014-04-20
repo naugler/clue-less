@@ -11,6 +11,7 @@ import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.MessageHandler;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Connection.ConnectionEventListener;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Menu;
@@ -20,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -40,9 +42,9 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     private final MenuItem joinGame = new MenuItem("Join Game");
     private final UserEngine userEngine = new UserEngine();
     private final ButtonPad buttonPad = new ButtonPad(userEngine);
-//    /**
-//     * @param args the command line arguments
-//     */
+    /**
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         System.out.println("Starting Clue-Less...");
         GameFrame gameFrame = new GameFrame();
@@ -162,6 +164,9 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             case LOGOFF:
                 log("User " + msg.getField("username") + " has left.");
                 break;
+            case START:
+            	buttonPad.enableAll(false);
+            	break;
             case MESSAGE:
                 //TODO(naugler) messaging?
                 log(msg.getField("source") + ": " + msg.getField("message"));
@@ -169,9 +174,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             case UPDATE:
                 handleUpdate(msg);
                 break;
-            // Note: Do opposite since message is coming from the server 
-            // So when suggest comes in, we need to respond to the suggestion
-            // If the response comes in, we need to tell original user.
+            
             case ACCUSE:
             	boolean won = (boolean) msg.getField("win");
             	if (won)
@@ -182,6 +185,9 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	{
             		// Show appropriate message
             	}
+            // Note: Do opposite since message is coming from the server 
+            // So when suggest comes in, we need to respond to the suggestion
+            // If the response comes in, we need to tell original user.
             case SUGGEST:
             	System.out.println("You are being asked to respond to suggestion");
             	System.out.println(msg);
@@ -204,10 +210,23 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	// alert player in log box
             	break;
             case END_TURN:
-            	// turn off all buttons
+            	buttonPad.enableAll(false);
+//            	userEngine.getClient().send(msg);
             	break;
             case NEXT_TURN:
             	// turn on appropriate buttons
+            	JOptionPane.showMessageDialog(this, "It is now your turn!");
+            	Object obj = msg.getField("buttons");
+            	List<String> buttons = null;
+            	if (obj instanceof List)
+            	{
+            		buttons = (List<String>) obj;
+            	}
+            	for (String button : buttons)
+            	{
+            		buttonPad.enableButton(button, true);
+            	}
+            	
             	break;
             default:
                 log("Unknown message: " + msg);

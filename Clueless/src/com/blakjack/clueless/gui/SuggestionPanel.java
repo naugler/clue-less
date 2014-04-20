@@ -27,8 +27,19 @@ public class SuggestionPanel extends JPanel {
     private final JComboBox roomComboBox = new JComboBox(new Object[]
     {Card.BALLROOM, Card.BILLIARD, Card.CONSERVATORY, Card.DININGROOM, Card.HALL, Card.KITCHEN, Card.LIBRARY, Card.LOUNGE, Card.STUDY});
     
-    public SuggestionPanel(boolean accusation) {
+    public SuggestionPanel() {
         initComponents();
+    }
+    /**
+     * This constructor is for the suggest box where the room is given and cannot be changed
+     * @param position
+     */
+    public SuggestionPanel(int position)
+    {
+    	initComponents();
+    	// TODO: change the 0 to correspond to the position of the player
+    	roomComboBox.setSelectedIndex(0);
+    	roomComboBox.setEnabled(false);
     }
     
     private void initComponents() {
