@@ -27,6 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 
 /**
  * The main application frame for Clue-Less
@@ -125,16 +126,18 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 loginPanel,
                 title,
                 JOptionPane.OK_CANCEL_OPTION);
-        try {
-            userEngine.connect(startServer, retval == JOptionPane.OK_OPTION, loginPanel.getPort(), loginPanel.getAddress(), loginPanel.getUsername(), this);
-        } catch (UnknownHostException ex) {
-            JOptionPane.showMessageDialog(this, "Unknown host: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Socket error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+        if (retval == JOptionPane.OK_OPTION) {
+            try {
+                userEngine.connect(startServer, loginPanel.getPort(), loginPanel.getAddress(), loginPanel.getUsername(), this);
+            } catch (UnknownHostException ex) {
+                JOptionPane.showMessageDialog(this, "Unknown host: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Socket error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            waitInLobby(startServer);
         }
-        waitInLobby(startServer);
 
     }
 
@@ -215,7 +218,12 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	break;
             case NEXT_TURN:
             	// turn on appropriate buttons
-            	JOptionPane.showMessageDialog(this, "It is now your turn!");
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        JOptionPane.showMessageDialog(GameFrame.this, "It is now your turn!");
+                    }
+                });
             	Object obj = msg.getField("buttons");
             	List<String> buttons = null;
             	if (obj instanceof List)

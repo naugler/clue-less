@@ -174,10 +174,9 @@ public class UserEngine {
       connection.send(msg);
   }
   
-  public void connect(boolean startServer, boolean okOption, int port, String address, String username, GameFrame gameFrame) throws IOException,UnknownHostException {	  
+  public void connect(boolean startServer, int port, String address, String username, GameFrame gameFrame) throws IOException,UnknownHostException {	  
 	  //TODO: Maybe here????
 //	  this.username = username;
-      if (okOption) {
           //TODO(naugler) validate login parameters
           if (startServer) {
               server = new CluelessServer(port);
@@ -200,7 +199,6 @@ public class UserEngine {
         	  client.stop();
         	  throw ex;
           }
-      }
   }
   
   public void shutdown() {

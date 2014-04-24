@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -44,7 +45,7 @@ public class Connection {
     private final List<ConnectionEventListener> listeners 
             = new ArrayList<ConnectionEventListener>();
     private final List<MessageHandler> handlers
-            = new ArrayList<MessageHandler>();
+            = Collections.synchronizedList(new ArrayList<MessageHandler>());
 
     public Connection() {
         
@@ -86,16 +87,22 @@ public class Connection {
     }
     
     public void addMessageHandler(MessageHandler handler) {
-        handlers.add(handler);
+        synchronized(handlers) {
+            handlers.add(handler);
+        }
     }
     
     public void removeMessageHandler(MessageHandler handler) {
-        handlers.remove(handler);
+        synchronized(handlers) {
+            handlers.remove(handler);
+        }
     }
     
     private void fireMessage(CluelessMessage msg) {
-        for (MessageHandler handler : handlers) {
-            handler.handle(this, msg);
+        synchronized(handlers) {
+            for (MessageHandler handler : handlers) {
+                handler.handle(this, msg);
+            }
         }
     }
     
