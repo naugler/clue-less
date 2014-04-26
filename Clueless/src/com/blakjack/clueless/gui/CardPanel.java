@@ -10,6 +10,8 @@ import com.blakjack.clueless.common.Card;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
@@ -23,10 +25,10 @@ public class CardPanel extends JPanel {
     
     private static final int VERT_GAP = 30;
     private static final int HORIZ_GAP = 20;
+    private int mouseX = Integer.MIN_VALUE;
+    private int mouseY = Integer.MIN_VALUE;
     
-    ImageIcon card1Image;
-    ImageIcon card2Image;
-    ImageIcon card3Image;
+    Map<Card, ImageIcon> cards = new HashMap<Card, ImageIcon>();
     
     public CardPanel() {
         TitledBorder border = new TitledBorder("Clue Cards");
@@ -37,26 +39,25 @@ public class CardPanel extends JPanel {
         setCards(Card.MUSTARD, Card.GREEN, Card.PEACOCK);
     }
     
-    public void setCards(Card newCard1, Card newCard2, Card newCard3) {
-        //load images for cards
-        card1Image = new ImageIcon(getClass().getClassLoader().getResource("card_"+newCard1.name().toLowerCase()+".png"));
-        card2Image = new ImageIcon(getClass().getClassLoader().getResource("card_"+newCard2.name().toLowerCase()+".png"));
-        card3Image = new ImageIcon(getClass().getClassLoader().getResource("card_"+newCard3.name().toLowerCase()+".png"));
+    public void setCards(Card... newCards) {
+        cards.clear();
+        for (Card card : newCards) {
+            cards.put(card, new ImageIcon(getClass().getClassLoader().getResource("card_"+card.name().toLowerCase()+".png")));
+        }
     }
 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
         
+        //calculate card size
         Graphics2D g2 = (Graphics2D)g;
-        if (card1Image != null) {
-            g2.drawImage(card1Image.getImage(), HORIZ_GAP, VERT_GAP, this);
-        }
-        if (card2Image != null) {
-            g2.drawImage(card2Image.getImage(), HORIZ_GAP*2, VERT_GAP*2, this);
-        }
-        if (card3Image != null) {
-            g2.drawImage(card3Image.getImage(), HORIZ_GAP*3, VERT_GAP*3, this);
+        int count = 1;
+        for (ImageIcon cardImage : cards.values()) {
+            if (cardImage != null) {
+                g2.drawImage(cardImage.getImage(), HORIZ_GAP*count, VERT_GAP*count, this);
+            }
+            ++count;
         }
     }
     

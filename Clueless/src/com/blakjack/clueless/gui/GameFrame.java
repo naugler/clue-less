@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -188,7 +189,6 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             case UPDATE:
                 handleUpdate(msg);
                 break;
-            
             case ACCUSE:
             	boolean won = (boolean) msg.getField("win");
             	if (won)
@@ -203,12 +203,32 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             // So when suggest comes in, we need to respond to the suggestion
             // If the response comes in, we need to tell original user.
             case SUGGEST:
-            	System.out.println("You are being asked to respond to suggestion");
-            	System.out.println(msg);
-            	// Show suggestion message to user.  
-                
-//            	// This method will be called in the "OK" of the suggestion
-//            	userEngine.respondToSuggestion(card, msg);
+            	// Show suggestion message to user.
+                List<Card> cardsInHand = userEngine.getPlayer().getCards();
+                List<Card> cardsToShow = new ArrayList<Card>();
+                String suggestedPerson = (String)msg.getField("person");
+                String suggestedWeapon = (String)msg.getField("weapon");
+                String suggestedRoom = "?"; //todo(naugler) how do i get the suggested room?
+                for (Card card : cardsInHand) {
+                    if (card.getName().equalsIgnoreCase(suggestedPerson) ||
+                            card.getName().equalsIgnoreCase(suggestedWeapon) ||
+                            card.getName().equalsIgnoreCase(suggestedRoom)) {
+                        cardsToShow.add(card);
+                    }
+                }
+                Card response = null;
+                if (cardsToShow.isEmpty()) {
+                    //todo(naugler)show dialog?
+                } else {
+                    response = (Card)JOptionPane.showInputDialog(this, 
+                            "How will you refute the suggestion?",
+                            "Input Required",
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            cardsToShow.toArray(),
+                            cardsToShow.get(0));
+                }
+            	userEngine.respondToSuggestion(response, msg);
                 break;
             case RESP_SUGGEST:
             	// Show resulting card if card exists and this user made suggestion
