@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 public class GameBoardPanel extends JPanel {
     

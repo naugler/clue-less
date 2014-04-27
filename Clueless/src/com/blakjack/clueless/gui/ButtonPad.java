@@ -1,5 +1,6 @@
 package com.blakjack.clueless.gui;
 
+import com.blakjack.clueless.common.Player;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,189 +9,173 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import com.blakjack.clueless.common.Player;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.ImageIcon;
 
 public class ButtonPad extends JPanel {
     
-    private class Button extends JButton {
-        
-        private final JButton button = new JButton();
-        private Button(ActionListener buttonListener) {
-            button.addActionListener(buttonListener);
-        }
-        public JButton getButton() {
-            return button;
-        }
-    }
+    private JButton suggestBtn;
+    private JButton accuseBtn;
+    private JButton shortcutBtn;
+    private JButton endBtn;
+    private JButton upBtn;
+    private JButton downBtn;
+    private JButton leftBtn;
+    private JButton rightBtn;
+    private final Map<String, JButton> buttons = new HashMap<String, JButton>();
+    private final Player player;
     
-//    private final ActionListener buttonListener = new ActionListener() {
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-////            if () {
-//                SuggestionPanel suggestionPanel = new SuggestionPanel(false);
-//                String title = false ? "Make Accusation" : "Make Suggestion";
-//                int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
-//                        suggestionPanel,
-//                        title,
-//                        JOptionPane.OK_CANCEL_OPTION);
-//                if (retval == JOptionPane.OK_OPTION)
-//                {
-//                	System.out.println("Button pressed by this player");
-//                	userEngine.makeSuggestion(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName());
-//                }
-////            }
-//        }
-//    };
-    
-    private final Button UP = new Button(new ActionListener() {
-    	@Override
-    	public void actionPerformed(ActionEvent e) {
-    		player.move("UP");
-    	}
-    });
-    private Player player;
-    private final Button DOWN = new Button(new ActionListener() {
-    	@Override
-    	public void actionPerformed(ActionEvent e) {
-    		player.move("DOWN");
-    	}
-    });
-    private final Button RIGHT = new Button(new ActionListener() {
-    	@Override
-    	public void actionPerformed(ActionEvent e) {
-    		player.move("RIGHT");
-    	}
-    });
-    private final Button LEFT = new Button(new ActionListener() {
-    	@Override
-    	public void actionPerformed(ActionEvent e) {
-    		player.move("LEFT");
-    	}
-    });
-    private final Button ACCUSE = new Button(new ActionListener() {
-    	@Override
-    	public void actionPerformed(ActionEvent e) {
-    		SuggestionPanel suggestionPanel = new SuggestionPanel();
-            String title = "Make Accusation";
-            int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
-                    suggestionPanel,
-                    title,
-                    JOptionPane.OK_CANCEL_OPTION);
-            if (retval == JOptionPane.OK_OPTION)
-            {
-            	System.out.println("Button pressed by this player");
-            	player.accuse(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName(), suggestionPanel.getRoom().getName());
-            }
-    	}
-    });
-    private final Button SUGGEST = new Button(new ActionListener() {
-    	@Override
-    	public void actionPerformed(ActionEvent e) {
-    		SuggestionPanel suggestionPanel = new SuggestionPanel(player.getPosition());
-            String title = "Make Suggestion";
-            int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
-                    suggestionPanel,
-                    title,
-                    JOptionPane.OK_CANCEL_OPTION);
-            if (retval == JOptionPane.OK_OPTION)
-            {
-            	System.out.println("Button pressed by this player");
-            	player.makeSuggestion(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName());
-            }
-    	}
-    });
-    private final Button SECRET = new Button(new ActionListener() {
-    	@Override
-    	public void actionPerformed(ActionEvent e) {
-    		player.move("SECRET");
-    	}
-    });
-    private final Button ENDTURN = new Button(new ActionListener() {
-    	@Override
-    	public void actionPerformed(ActionEvent e) {
-    		player.endTurn();
-    	}
-    });
-	
     public ButtonPad(Player client) {
         super();
         player = client;
         initComponents();
-        enableAll(false);
+        setAllEnabled(false);
     }
-    
-    public void enableButton(String button, boolean enable)
-    {
-    	Button b = null;
-    	switch (button)
-    	{
-    	case "UP":
-    		b = UP;
-    		break;
-    	case "DOWN":
-    		b = DOWN;
-    		break;
-    	case "LEFT":
-    		b = LEFT;
-    		break;
-    	case "RIGHT":
-    		b = RIGHT;
-    		break;
-    	case "SECRET":
-    		b = SECRET;
-    		break;
-    	case "ENDTURN":
-    		b = ENDTURN;
-    		break;
-    	case "ACCUSE":
-    		b = ACCUSE;
-    		break;
-    	case "SUGGEST":
-    		b = SUGGEST;
-    		break;
-    	default:
-    		System.out.println("ERROR: That button does not exist!!!!");
-    	}
-    	if (b != null)
-    	{
-    		b.getButton().setEnabled(enable);
-    	}
-    }
-    
-    public void enableAll(boolean enable)
-    {
-    	ACCUSE.getButton().setEnabled(enable);
-    	DOWN.getButton().setEnabled(enable);
-    	ENDTURN.getButton().setEnabled(enable);
-    	LEFT.getButton().setEnabled(enable);
-    	RIGHT.getButton().setEnabled(enable);
-    	SECRET.getButton().setEnabled(enable);
-    	SUGGEST.getButton().setEnabled(enable);
-    	UP.getButton().setEnabled(enable);
-    }
-    
-    
-        
-    private void initComponents() {
-        setLayout(new GridLayout(3,3));
-        
-        add(SUGGEST.getButton());
-        add(UP.getButton());
-        add(SECRET.getButton());
-        add(LEFT.getButton());
-        add(new JPanel());
-        add(RIGHT.getButton());
-        add(ACCUSE.getButton());
-        add(DOWN.getButton());
-        add(ENDTURN.getButton());
-    }
-	
-//	public void setButtonEnabled(Button button, boolean enabled){
-//		Array.get(button).setEnabled(enabled);		
-//	}
 
-//	public boolean isButtonEnabled(Button button) {
-//		return Array.get(button).enabled
-//	}
-	
+    public void setBtnEnabled(String button, boolean enable) {
+        buttons.get(button).setEnabled(enable);
+    }
+
+    public void setAllEnabled(boolean enable) {
+        accuseBtn.setEnabled(enable);
+        downBtn.setEnabled(enable);
+        endBtn.setEnabled(enable);
+        leftBtn.setEnabled(enable);
+        rightBtn.setEnabled(enable);
+        shortcutBtn.setEnabled(enable);
+        suggestBtn.setEnabled(enable);
+        upBtn.setEnabled(enable);
+    }
+
+    private void initComponents() {
+        setLayout(new GridLayout(3, 3));
+
+        //SUGGEST//
+        suggestBtn = new JButton();
+        suggestBtn.setToolTipText("Make a suggestion");
+        suggestBtn.setIcon(new ImageIcon(getClass().getClassLoader().getResource("suggestBtn.png")));
+        suggestBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SuggestionPanel suggestionPanel = new SuggestionPanel(player.getPosition());
+                String title = "Make Suggestion";
+                int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
+                        suggestionPanel,
+                        title,
+                        JOptionPane.OK_CANCEL_OPTION);
+                if (retval == JOptionPane.OK_OPTION) {
+                    System.out.println("Button pressed by this player");
+                    player.makeSuggestion(suggestionPanel.getPerson().getName(), 
+                            suggestionPanel.getWeapon().getName());
+                }
+            }
+        });
+        buttons.put("SUGGEST", suggestBtn);
+        
+        //ACCUSE//
+        accuseBtn = new JButton();
+        accuseBtn.setToolTipText("Make an accusation");
+        accuseBtn.setIcon(new ImageIcon(getClass().getClassLoader().getResource("accuseBtn.png")));
+        accuseBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SuggestionPanel suggestionPanel = new SuggestionPanel();
+                String title = "Make Accusation";
+                int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
+                        suggestionPanel,
+                        title,
+                        JOptionPane.OK_CANCEL_OPTION);
+                if (retval == JOptionPane.OK_OPTION) {
+                    System.out.println("Button pressed by this player");
+                    player.accuse(suggestionPanel.getPerson().getName(), 
+                            suggestionPanel.getWeapon().getName(), 
+                            suggestionPanel.getRoom().getName());
+                }
+            }
+        });
+        buttons.put("ACCUSE", accuseBtn);
+        
+        //SHORTCUT//
+        shortcutBtn = new JButton();
+        shortcutBtn.setToolTipText("Take the shortcut!");
+        shortcutBtn.setIcon(new ImageIcon(getClass().getClassLoader().getResource("shortcutBtn.png")));
+        shortcutBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                player.move("SECRET");
+            }
+        });
+        buttons.put("SECRET", shortcutBtn);
+        
+        //ENDTURN//
+        endBtn = new JButton();
+        endBtn.setToolTipText("End the turn");
+        endBtn.setIcon(new ImageIcon(getClass().getClassLoader().getResource("endBtn.png")));
+        endBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                player.endTurn();
+            }
+        });
+        buttons.put("ENDTURN", endBtn);
+        
+        //UP//
+        upBtn = new JButton();
+        upBtn.setToolTipText("Move up");
+        upBtn.setIcon(new ImageIcon(getClass().getClassLoader().getResource("upBtn.png")));
+        upBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                player.move("UP");
+            }
+        });
+        buttons.put("UP", upBtn);
+        
+        //DOWN//
+        downBtn = new JButton();
+        downBtn.setToolTipText("Move down");
+        downBtn.setIcon(new ImageIcon(getClass().getClassLoader().getResource("downBtn.png")));
+        downBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                player.move("DOWN");
+            }
+        });
+        buttons.put("DOWN", downBtn);
+        
+        //LEFT//
+        leftBtn = new JButton();
+        leftBtn.setToolTipText("Move left");
+        leftBtn.setIcon(new ImageIcon(getClass().getClassLoader().getResource("leftBtn.png")));
+        leftBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                player.move("LEFT");
+            }
+        });
+        buttons.put("LEFT", leftBtn);
+        
+        //DOWN//
+        rightBtn = new JButton();
+        rightBtn.setToolTipText("Move right");
+        rightBtn.setIcon(new ImageIcon(getClass().getClassLoader().getResource("rightBtn.png")));
+        rightBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                player.move("RIGHT");
+            }
+        });
+        buttons.put("RIGHT", rightBtn);
+        
+        add(suggestBtn);
+        add(upBtn);
+        add(shortcutBtn);
+        add(leftBtn);
+        add(new JPanel());
+        add(rightBtn);
+        add(accuseBtn);
+        add(downBtn);
+        add(endBtn);
+    }
 }

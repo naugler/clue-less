@@ -16,15 +16,6 @@ import java.util.List;
 
 import com.blakjack.clueless.common.SquareTile;
 
-
-
-
-
-
-
-
-
-
 import java.util.Date;
 
 public class GameEngine implements Connection.MessageHandler, Connection.ConnectionEventListener {
@@ -162,7 +153,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
         private CluelessMessage buildUpdate() {
             CluelessMessage msg = new CluelessMessage(Type.UPDATE);
             System.out.println( "IN GAMEENGINE!!!! " + users);
-            msg.setField("status", (Serializable) users);
+            msg.setField("status", new ArrayList<Player>(users));
             int turn = playerTurnIndex;
             int count = 0;
             for (Player u : users) {

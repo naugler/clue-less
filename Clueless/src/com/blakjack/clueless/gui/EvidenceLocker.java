@@ -6,6 +6,7 @@ import java.awt.Component;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -16,12 +17,16 @@ public class EvidenceLocker extends JPanel {
 
     private final TableCellRenderer cardRenderer = new DefaultTableCellRenderer() {
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        public Component getTableCellRendererComponent(JTable table, 
+                Object value, boolean isSelected, boolean hasFocus, 
+                int row, int column) {
             return super.getTableCellRendererComponent(table,
                     Card.values()[row], isSelected, hasFocus, row, column);
         }
     };
-    private final TableModel model = new DefaultTableModel(Card.values().length, 3) {
+    private final TableModel model = new DefaultTableModel(
+            new String[]{"Card", "", "Notes"}, 
+            Card.values().length) {
         @Override
         public boolean isCellEditable(int row, int column) {
             return column != 0;
@@ -54,11 +59,13 @@ public class EvidenceLocker extends JPanel {
     };
 
     public EvidenceLocker() {
+        TitledBorder border = new TitledBorder("Evidence");
+        setBorder(border);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         TableColumn cardColumn = table.getColumnModel().getColumn(0);
         cardColumn.setCellRenderer(cardRenderer);
         setLayout(new BorderLayout());
-        JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane);
+//        JScrollPane scrollPane = new JScrollPane(table);
+        add(table);
     }
 }

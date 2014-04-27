@@ -60,6 +60,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         initializeComponents();
         pack();
+        setMaximumSize(getSize());
     }
 
     private void initializeComponents() {
@@ -157,6 +158,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
 
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
+        System.out.println("GAMEFRAME HANDLE: "+msg);
         CluelessMessage.Type type = (CluelessMessage.Type) msg.getField("type");
         List<Player> temp = (List<Player>) msg.getField("status");
         List<Player> gameStatus = null;
@@ -177,7 +179,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 log("User " + msg.getField("username") + " has left.");
                 break;
             case START:
-            	buttonPad.enableAll(false);
+            	buttonPad.setAllEnabled(false);
             	break;
             case MESSAGE:
                 //TODO(naugler) messaging?
@@ -222,7 +224,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	// alert player in log box
             	break;
             case END_TURN:
-            	buttonPad.enableAll(false);
+            	buttonPad.setAllEnabled(false);
 //            	userEngine.getClient().send(msg);
             	break;
             case NEXT_TURN:
@@ -241,7 +243,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	}
             	for (String button : buttons)
             	{
-            		buttonPad.enableButton(button, true);
+            		buttonPad.setBtnEnabled(button, true);
             	}
             	
             	break;

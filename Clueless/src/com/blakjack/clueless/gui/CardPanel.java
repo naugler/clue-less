@@ -12,6 +12,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 /**
  * This class shows the user's Clue-Less cards
@@ -28,6 +29,8 @@ public class CardPanel extends JPanel {
     ImageIcon card3Image;
     
     public CardPanel() {
+        TitledBorder border = new TitledBorder("Clue Cards");
+        setBorder(border);
         setPreferredSize(new Dimension(150,250));
         
         //just some in-place testing...

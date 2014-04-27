@@ -22,6 +22,7 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -92,31 +93,35 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
     }
 
     @Override
-    public void handle(Connection connection, CluelessMessage msg) {
+    public void handle(Connection connection, final CluelessMessage msg) {
         CluelessMessage.Type type = (CluelessMessage.Type)msg.getField("type");
         switch (type) {
             case START:
                 setVisible(false);
                 break;
             case UPDATE:
-                //clear table model
-                startButton.setEnabled(false);
-                for (int i = playerModel.getRowCount()-1; i >= 0; --i) {
-                    System.out.println("removing row");
-                    playerModel.removeRow(i);
-                }
-                //add all players in update
-                for (int i = 0; i < 6; ++i) {
-                    String username = (String)msg.getField("player"+i+"username");
-                    if (username != null) {
-                        String character = (String)msg.getField("player"+i+"character");
-                        playerModel.addRow(new Object[]{i+1, username, character, "Ready"});
-                        if (i > 1) {
-                            startButton.setEnabled(true);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {//clear table model
+                        startButton.setEnabled(false);
+                        for (int i = playerModel.getRowCount()-1; i >= 0; --i) {
+                            System.out.println("removing row");
+                            playerModel.removeRow(i);
                         }
+                        //add all players in update
+                        for (int i = 0; i < 6; ++i) {
+                            String username = (String)msg.getField("player"+i+"username");
+                            if (username != null) {
+                                String character = (String)msg.getField("player"+i+"character");
+                                playerModel.addRow(new Object[]{i+1, username, character, "Ready"});
+                                if (i > 1) {
+                                    startButton.setEnabled(true);
+                                }
+                            }
+                        }
+                        playerModel.fireTableDataChanged();
                     }
-                }
-                playerModel.fireTableDataChanged();
+                });
                 break;
             default:
         }
