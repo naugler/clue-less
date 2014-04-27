@@ -11,6 +11,7 @@ import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.MessageHandler;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Connection.ConnectionEventListener;
+import com.blakjack.clueless.common.GameBoardStatus;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -43,6 +44,8 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     private final MenuItem joinGame = new MenuItem("Join Game");
     private final UserEngine userEngine = new UserEngine();
     private final ButtonPad buttonPad = new ButtonPad(userEngine);
+    private static GameBoardStatus gameStatus = new GameBoardStatus();
+    private final GameBoardPanel gameBoard = new GameBoardPanel(gameStatus.getData());;
     /**
      * @param args the command line arguments
      */
@@ -113,8 +116,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         leftPanel.add(buttonPad, BorderLayout.CENTER);
         leftPanel.add(cardPanel, BorderLayout.SOUTH);
         add(leftPanel, BorderLayout.WEST);
-
-        add(new GameBoardPanel(), BorderLayout.CENTER);
+        add(gameBoard, BorderLayout.CENTER);
 
         add(new EvidenceLocker(), BorderLayout.EAST);
     }
@@ -156,6 +158,12 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
         CluelessMessage.Type type = (CluelessMessage.Type) msg.getField("type");
+        GameBoardStatus temp = (GameBoardStatus) msg.getField("status");
+        if (temp != null)
+        {
+        	System.out.println(temp);
+        	gameStatus = temp;
+        }
         switch (type) {
             case ERROR:
                 JOptionPane.showMessageDialog(this, msg.getField("error"), "Error", JOptionPane.ERROR_MESSAGE);
@@ -206,9 +214,9 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
 //            	userEngine.makeSuggestion(person, weapon);
             	break;
             case MOVE:
-            	String player = (String) msg.getField("player");
-            	int pos = (int) msg.getField("position");
-            	System.out.println("Player " + player + " new position " + pos + "if up should be -6" );
+//            	String player = (String) msg.getField("player");
+//            	int pos = (int) msg.getField("position");
+//            	System.out.println("Player " + player + " new position " + pos + "if up should be -6" );
             	// move the piece to the correct place in the graphics
             	// alert player in log box
             	break;
@@ -239,6 +247,12 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             default:
                 log("Unknown message: " + msg);
         }
+        if (gameStatus != null)
+        {
+        	gameBoard.setPlayerPositions(gameStatus.getData());
+        }
+        gameBoard.repaint();
+        
     }
 
     /**
@@ -247,12 +261,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
      * @param msg
      */
     private void handleUpdate(CluelessMessage msg) {
-        //what kind of message was?
-        //movement - move a piece
-        //change game board
-        //update game pad
-        //suggestions? - show suggestion popup
-
+    	gameStatus = (GameBoardStatus) msg.getField("status");
     }
 
     public void log(String message) {

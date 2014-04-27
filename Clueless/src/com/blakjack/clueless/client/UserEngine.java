@@ -123,9 +123,11 @@ public class UserEngine {
   
   public void makeSuggestion(String person, String weapon )
   {
+	  System.out.println("In UserEngine  Person = " + person + " weapon = " + weapon);
 	  CluelessMessage message = new CluelessMessage(Type.SUGGEST);
       message.setField("person", person);
       message.setField("weapon", weapon);
+      System.out.println(message);
       sendToServer(message);
   }
   
@@ -153,6 +155,7 @@ public class UserEngine {
    */
   public void move(String direction)
   {
+	  System.out.println(" In USER ENGINE direction " + direction);
 	  // If direction is allowed
 	  CluelessMessage msg = new CluelessMessage(Type.MOVE);
 	  msg.setField("direction", direction);

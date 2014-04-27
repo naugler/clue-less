@@ -3,6 +3,7 @@ package com.blakjack.clueless.server;
 import com.blakjack.clueless.client.UserEngine;
 import com.blakjack.clueless.common.Card;
 import com.blakjack.clueless.common.CluelessMessage;
+import com.blakjack.clueless.common.GameBoardStatus;
 import com.blakjack.clueless.common.Movement;
 import com.blakjack.clueless.common.Player;
 import com.blakjack.clueless.common.CluelessMessage.Type;
@@ -25,6 +26,7 @@ import com.blakjack.clueless.common.SquareTile;
 
 
 
+
 import java.util.Date;
 
 public class GameEngine implements Connection.MessageHandler, Connection.ConnectionEventListener {
@@ -36,6 +38,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 	List<Character> availChars = new ArrayList<Character>();
 	private static SquareTile[] gameboard = new SquareTile[NUM_SQUARES];
 	private static Deck deck = new Deck();
+	private static GameBoardStatus gameStatus = new GameBoardStatus();
 //	This index determines the players turn, the integer refers to the index in the players list
 	private static int playerTurnIndex = 0;
 //	This keeps track of how many users were NOT able to refute suggestion
@@ -115,15 +118,14 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 			availChars.remove(player.getCharacter());
 		}
 		player.setUsername(username);
+		// We know that the character is unique so we can do this
+		// -1 is starting position
+		gameStatus.add(player.getCharacter().getColor(), 13);
+		
 		user.setPlayer(player);
 		user.getPlayer().setConnection(connection);
 		
 		addPlayer(user);
-//		// Tell the gameFrame/userengine what the new player is
-//		CluelessMessage msg = new CluelessMessage(Type.SET_PLAYER);
-//		msg.setField("username", username);
-//		msg.setField("connection", connection);
-		
 	}
 	
 	private Player getPlayerFromCharacter(Character p)
@@ -163,6 +165,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
         
         private CluelessMessage buildUpdate() {
             CluelessMessage msg = new CluelessMessage(Type.UPDATE);
+            msg.setField("status", gameStatus);
             int turn = playerTurnIndex;
             int count = 0;
             for (UserEngine u : users) {
@@ -208,7 +211,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                         CluelessMessage response = new CluelessMessage(Type.MESSAGE);
                         response.setField("message", "Welcome "+newUser+"!");
                         broadcast(response);
-                        broadcast(buildUpdate());
+//                        broadcast(buildUpdate());
                     } else {
                         CluelessMessage error = new CluelessMessage(Type.ERROR);
                         error.setField("error", "Game is full.");
@@ -337,10 +340,11 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	}
                 	
                 	//Tell everyone that player moved
-                	message = new CluelessMessage(Type.MOVE);
-                	message.setField("player", curPlayer.getUsername());
-                	message.setField("position", newPos);
-                	broadcast(message);
+//                	message = new CluelessMessage(Type.MOVE);
+                	gameStatus.add(curPlayer.getCharacter().getColor(), newPos);
+//                	message.setField("player", curPlayer.getUsername());
+//                	message.setField("position", newPos);
+//                	broadcast(message);
                 		
                 	break;
                 case END_TURN:
@@ -359,6 +363,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     error.setField("error", "Unknown message type "+type);
                     connection.send(msg);
             }
+            broadcast(buildUpdate());
 /*   
  * Server Received Messages:
  *  get Player and port

@@ -1,14 +1,16 @@
 package com.blakjack.clueless.gui;
 
 import com.blakjack.clueless.common.Player;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.ImageIcon;
+import java.util.Map;
 
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 public class GameBoardPanel extends JPanel {
@@ -16,25 +18,24 @@ public class GameBoardPanel extends JPanel {
     private final double PIECE_TILE_RATIO = 0.25; //size of the piece as % of tile size
     
     private final ImageIcon gameboard;
-    private List<Player> currentPlayers;
+    private Map<Color, Integer> currentPlayers;
     
-    public GameBoardPanel() {
+    public GameBoardPanel(Map<Color,Integer> players) {
         gameboard = new ImageIcon(getClass().getClassLoader().getResource("gameboard.png"));
         setPreferredSize(new Dimension(gameboard.getIconWidth(), gameboard.getIconHeight()));
         
         //just some in-place testing...
-        final Player mtard = new Player(Color.blue);
-        mtard.setPosition(6);
-        setPlayerPositions(new ArrayList<Player>() {{
-            add(mtard);
-        }});
+//        final Map<Color, Integer> mtard = new HashMap();
+//        mtard.put(Color.blue, 6);
+        players.put(Color.blue, 6);
+        setPlayerPositions(players);
     }
 
     // Gameboard image never changes we just need the pixel offsets
     // List of colorful dots (these do change)
-    public void setPlayerPositions(List<Player> players) {
+    public void setPlayerPositions(Map<Color, Integer> players) {
         //start everyone in their starting positions
-        currentPlayers = Collections.synchronizedList(players);
+        currentPlayers = Collections.synchronizedMap(players);
     }
 
     @Override
@@ -47,8 +48,8 @@ public class GameBoardPanel extends JPanel {
             int boardHeight = gameboard.getIconHeight();
             int tileWidth = boardWidth / 5;
             int tileHeight = boardHeight / 5;
-            for (Player player : currentPlayers) {
-                int pos = player.getPosition();
+            for (Color key : currentPlayers.keySet()) {
+            	int pos = currentPlayers.get(key);
                 int tileX = pos%5;
                 int tileY = pos/5;
                 
@@ -57,7 +58,7 @@ public class GameBoardPanel extends JPanel {
                 int height = (int)(tileHeight*PIECE_TILE_RATIO);
                 int x = tileX*tileWidth+(tileWidth-width)/2;
                 int y = tileY*tileHeight+(tileHeight-height)/2;
-                arg0.setColor(player.getCharacter().getColor());
+                arg0.setColor(key);
                 arg0.fillOval(x, y, width, height);
             }
         }
