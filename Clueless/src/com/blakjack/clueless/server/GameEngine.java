@@ -1,9 +1,7 @@
 package com.blakjack.clueless.server;
 
-import com.blakjack.clueless.client.UserEngine;
 import com.blakjack.clueless.common.Card;
 import com.blakjack.clueless.common.CluelessMessage;
-import com.blakjack.clueless.common.GameBoardStatus;
 import com.blakjack.clueless.common.Movement;
 import com.blakjack.clueless.common.Player;
 import com.blakjack.clueless.common.CluelessMessage.Type;
@@ -34,11 +32,11 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 	private static final int NUM_SQUARES = 25;
 //	Integer is the port
 	
-	List<UserEngine> users = new ArrayList<UserEngine>();
-	List<Character> availChars = new ArrayList<Character>();
+//	List<UserEngine> users = new ArrayList<UserEngine>();
+	List<Player> users = new ArrayList<>();
+	List<Character> availChars = new ArrayList<>();
 	private static SquareTile[] gameboard = new SquareTile[NUM_SQUARES];
 	private static Deck deck = new Deck();
-	private static GameBoardStatus gameStatus = new GameBoardStatus();
 //	This index determines the players turn, the integer refers to the index in the players list
 	private static int playerTurnIndex = 0;
 //	This keeps track of how many users were NOT able to refute suggestion
@@ -78,11 +76,11 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		Card card = deck.deal();
 		while (card != null)
 		{
-			for(UserEngine u : users)
+			for(Player p : users)
 			{
 				if (card != null)
 				{
-					u.getPlayer().dealCard(card);
+					p.dealCard(card);
 					card = deck.deal();
 				}
 			}
@@ -107,7 +105,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 //				}
 //			}
 //		}
-		UserEngine user = new UserEngine();
+//		UserEngine user = new UserEngine();
 		Player player;
 		
 //		TODO: Possible issues with race conditions
@@ -118,38 +116,36 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 			availChars.remove(player.getCharacter());
 		}
 		player.setUsername(username);
+		player.setConnection(connection);
 		// We know that the character is unique so we can do this
 		// -1 is starting position
-		gameStatus.add(player.getCharacter().getColor(), 13);
 		
-		user.setPlayer(player);
-		user.getPlayer().setConnection(connection);
 		
-		addPlayer(user);
+		addPlayer(player);
 	}
 	
 	private Player getPlayerFromCharacter(Character p)
 	{
-		for (UserEngine user : users)
+		for (Player player : users)
 		{
-			if (user.getPlayer().getCharacter().equals(p))
+			if (player.getCharacter().equals(p))
 			{
-				return user.getPlayer();
+				return player;
 			}
 		}
 		return null;
 	}
 	
-	private void addPlayer(UserEngine u)
+	private void addPlayer(Player p)
 	{
 //        Scarlet always goes first so make sure they are put in the front of the list 
-		if (u.getPlayer().getCharacter().equals(Character.SCARLET) )
+		if (p.getCharacter().equals(Character.SCARLET) )
 		{
-			users.add(0, u);
+			users.add(0, p);
 		}
 		else
 		{
-			users.add(u);
+			users.add(p);
 		}
 		
 	}
@@ -158,20 +154,21 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
         private void broadcast(CluelessMessage message) {
             message.setField("source", "server");
             message.setField("date", new Date(System.currentTimeMillis()));
-            for (UserEngine u : users) {
-                u.getPlayer().getConnection().send(message);
+            for (Player p : users) {
+                p.getConnection().send(message);
             }
         }
         
         private CluelessMessage buildUpdate() {
             CluelessMessage msg = new CluelessMessage(Type.UPDATE);
-            msg.setField("status", gameStatus);
+            System.out.println( "IN GAMEENGINE!!!! " + users);
+            msg.setField("status", (Serializable) users);
             int turn = playerTurnIndex;
             int count = 0;
-            for (UserEngine u : users) {
-                msg.setField("player"+count+"username", u.getPlayer().getUsername());
-                msg.setField("player"+count+"character", u.getPlayer().getCharacter().getName());
-                msg.setField("player"+count+"position", u.getPlayer().getPosition());
+            for (Player u : users) {
+                msg.setField("player"+count+"username", u.getUsername());
+                msg.setField("player"+count+"character", u.getCharacter().getName());
+                msg.setField("player"+count+"position", u.getPosition());
                 ++count;
             }
             msg.setField("turn", turn);
@@ -179,9 +176,9 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
             return msg;
         }
         
-    public UserEngine getUser(Connection connection) {
-        for (UserEngine user : users) {
-            if (user.getPlayer().getConnection().equals(connection)) {
+    public Player getUser(Connection connection) {
+        for (Player user : users) {
+            if (user.getConnection().equals(connection)) {
                 return user;
             }
         }
@@ -198,8 +195,8 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 case LOGIN:
                     if (users.size() < 6) {
                         String newUser = msg.getField("source").toString();
-                        for (UserEngine u : users) {
-                            if (u.getPlayer().getUsername().equalsIgnoreCase(newUser)) {
+                        for (Player u : users) {
+                            if (u.getUsername().equalsIgnoreCase(newUser)) {
                                 CluelessMessage error = new CluelessMessage(Type.ERROR);
                                 error.setField("error", "Username already exists");
                                 connection.send(error);
@@ -227,7 +224,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     List<String> buttons = getEnabledButtons();
                     message = new CluelessMessage(Type.NEXT_TURN);
                     message.setField("buttons", (Serializable) buttons);
-                    users.get(playerTurnIndex).getPlayer().getConnection().send(message);
+                    users.get(playerTurnIndex).getConnection().send(message);
                     break;
                 case ACCUSE:
                 	String character = (String) msg.getField("character");
@@ -242,7 +239,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     	won = true;
                     }
                     msg.setField("win", won);
-                    msg.setField("name", users.get(playerTurnIndex).getPlayer().getUsername());
+                    msg.setField("name", users.get(playerTurnIndex).getUsername());
                     broadcast(msg);
                     break;
                 case SUGGEST:
@@ -251,8 +248,8 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	refuted = false;
                 	System.out.println("IN Game Engine first time!!");
                 	// Get the room that the current player is in.
-                	UserEngine currPlayer = users.get(playerTurnIndex);
-                	String rooms = gameboard[currPlayer.getPlayer().getPosition()].getRoom();
+                	Player currPlayer = users.get(playerTurnIndex);
+                	String rooms = gameboard[currPlayer.getPosition()].getRoom();
 	            	msg.setField("room", rooms);
                 	
                 	// find out which try it is. (if a player was not able 
@@ -262,10 +259,10 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 	            	
                 	while (offsetToSuggestTo < users.size() && refuted == false)
                 	{
-                		UserEngine suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%6); 
-                		System.out.println("Asking suggested Player " + suggPlayer.getPlayer().getUsername());
+                		Player suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%6); 
+                		System.out.println("Asking suggested Player " + suggPlayer.getUsername());
                 		System.out.println(msg);
-		            	suggPlayer.getPlayer().getConnection().send(msg);
+		            	suggPlayer.getConnection().send(msg);
 		            	synchronized(this)
 		            	{
 		            		try {
@@ -293,7 +290,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	else
                 	{
                 		refuted = true;
-                		users.get(playerTurnIndex).getPlayer().getConnection().send(msg);
+                		users.get(playerTurnIndex).getConnection().send(msg);
                 		message = new CluelessMessage(Type.RESP_SUGGEST);
                 		for (String key : msg.getFields().keySet())
                 		{
@@ -314,7 +311,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	
                 	String direction = (String) msg.getField("direction");
                 	System.out.println( "in GAME ENGINE direction " + direction);
-                	Player curPlayer = users.get(playerTurnIndex).getPlayer();
+                	Player curPlayer = users.get(playerTurnIndex);
                 	int currPos = curPlayer.getPosition();
                 	int newPos = currPos;
                 	// If move is allowed for current player
@@ -338,10 +335,10 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 		newPos = Math.abs(currPos - 24);
                 		break;
                 	}
+                	curPlayer.setPosition(newPos);
                 	
                 	//Tell everyone that player moved
 //                	message = new CluelessMessage(Type.MOVE);
-                	gameStatus.add(curPlayer.getCharacter().getColor(), newPos);
 //                	message.setField("player", curPlayer.getUsername());
 //                	message.setField("position", newPos);
 //                	broadcast(message);
@@ -349,7 +346,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	break;
                 case END_TURN:
                 	playerTurnIndex = (playerTurnIndex + 1 ) % users.size();
-                	Player nextPlayer = users.get(playerTurnIndex).getPlayer();
+                	Player nextPlayer = users.get(playerTurnIndex);
                 	// tell next player that it is their turn
                 	// tell game frame which moves are valid
                 	message = new CluelessMessage(Type.NEXT_TURN);
@@ -394,7 +391,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
     
     private List<String> getEnabledButtons()
     {
-    	Player nextPlayer = users.get(playerTurnIndex).getPlayer();
+    	Player nextPlayer = users.get(playerTurnIndex);
     	// tell next player that it is their turn
     	// tell game frame which moves are valid
     	List<String> buttons = new LinkedList<>();
@@ -429,9 +426,9 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
     @Override
     public void event(Connection connection, Connection.ConnectionEvent event) {
         if (event == ConnectionEvent.CLOSED) {
-            UserEngine user = null;
-            for (UserEngine u : users) {
-                if (u.getPlayer().getConnection() == connection) {
+            Player user = null;
+            for (Player u : users) {
+                if (u.getConnection() == connection) {
                     user = u;
                     break;
                 }
@@ -439,7 +436,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
             if (user != null) {
                 users.remove(user);
                 CluelessMessage logoff = new CluelessMessage(Type.LOGOFF);
-                logoff.setField("username", user.getPlayer().getUsername());
+                logoff.setField("username", user.getUsername());
                 broadcast(logoff);
                 broadcast(buildUpdate());
             } else {

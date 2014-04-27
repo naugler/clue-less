@@ -18,24 +18,24 @@ public class GameBoardPanel extends JPanel {
     private final double PIECE_TILE_RATIO = 0.25; //size of the piece as % of tile size
     
     private final ImageIcon gameboard;
-    private Map<Color, Integer> currentPlayers;
+    private List<Player> currentPlayers;
     
-    public GameBoardPanel(Map<Color,Integer> players) {
+    public GameBoardPanel() {
         gameboard = new ImageIcon(getClass().getClassLoader().getResource("gameboard.png"));
         setPreferredSize(new Dimension(gameboard.getIconWidth(), gameboard.getIconHeight()));
         
         //just some in-place testing...
 //        final Map<Color, Integer> mtard = new HashMap();
 //        mtard.put(Color.blue, 6);
-        players.put(Color.blue, 6);
-        setPlayerPositions(players);
+//        players.put(Color.blue, 6);
+//        setPlayerPositions(players);
     }
 
     // Gameboard image never changes we just need the pixel offsets
     // List of colorful dots (these do change)
-    public void setPlayerPositions(Map<Color, Integer> players) {
+    public void setPlayerPositions(List<Player> players) {
         //start everyone in their starting positions
-        currentPlayers = Collections.synchronizedMap(players);
+        currentPlayers = Collections.synchronizedList(players);
     }
 
     @Override
@@ -48,8 +48,8 @@ public class GameBoardPanel extends JPanel {
             int boardHeight = gameboard.getIconHeight();
             int tileWidth = boardWidth / 5;
             int tileHeight = boardHeight / 5;
-            for (Color key : currentPlayers.keySet()) {
-            	int pos = currentPlayers.get(key);
+            for (Player key : currentPlayers) {
+            	int pos = key.getPosition();
                 int tileX = pos%5;
                 int tileY = pos/5;
                 
@@ -58,7 +58,7 @@ public class GameBoardPanel extends JPanel {
                 int height = (int)(tileHeight*PIECE_TILE_RATIO);
                 int x = tileX*tileWidth+(tileWidth-width)/2;
                 int y = tileY*tileHeight+(tileHeight-height)/2;
-                arg0.setColor(key);
+                arg0.setColor(key.getCharacter().getColor());
                 arg0.fillOval(x, y, width, height);
             }
         }

@@ -8,7 +8,7 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import com.blakjack.clueless.client.UserEngine;
+import com.blakjack.clueless.common.Player;
 
 public class ButtonPad extends JPanel {
     
@@ -45,26 +45,26 @@ public class ButtonPad extends JPanel {
     private final Button UP = new Button(new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
-    		userEngine.move("UP");
+    		player.move("UP");
     	}
     });
-    private UserEngine userEngine;
+    private Player player;
     private final Button DOWN = new Button(new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
-    		userEngine.move("DOWN");
+    		player.move("DOWN");
     	}
     });
     private final Button RIGHT = new Button(new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
-    		userEngine.move("RIGHT");
+    		player.move("RIGHT");
     	}
     });
     private final Button LEFT = new Button(new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
-    		userEngine.move("LEFT");
+    		player.move("LEFT");
     	}
     });
     private final Button ACCUSE = new Button(new ActionListener() {
@@ -79,14 +79,14 @@ public class ButtonPad extends JPanel {
             if (retval == JOptionPane.OK_OPTION)
             {
             	System.out.println("Button pressed by this player");
-            	userEngine.accuse(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName(), suggestionPanel.getRoom().getName());
+            	player.accuse(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName(), suggestionPanel.getRoom().getName());
             }
     	}
     });
     private final Button SUGGEST = new Button(new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
-    		SuggestionPanel suggestionPanel = new SuggestionPanel(userEngine.getPlayer().getPosition());
+    		SuggestionPanel suggestionPanel = new SuggestionPanel(player.getPosition());
             String title = "Make Suggestion";
             int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
                     suggestionPanel,
@@ -95,26 +95,26 @@ public class ButtonPad extends JPanel {
             if (retval == JOptionPane.OK_OPTION)
             {
             	System.out.println("Button pressed by this player");
-            	userEngine.makeSuggestion(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName());
+            	player.makeSuggestion(suggestionPanel.getPerson().getName(), suggestionPanel.getWeapon().getName());
             }
     	}
     });
     private final Button SECRET = new Button(new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
-    		userEngine.move("SECRET");
+    		player.move("SECRET");
     	}
     });
     private final Button ENDTURN = new Button(new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
-    		userEngine.endTurn();
+    		player.endTurn();
     	}
     });
 	
-    public ButtonPad(UserEngine client) {
+    public ButtonPad(Player client) {
         super();
-        userEngine = client;
+        player = client;
         initComponents();
         enableAll(false);
     }

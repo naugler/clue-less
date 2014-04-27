@@ -5,13 +5,12 @@
  */
 package com.blakjack.clueless.gui;
 
-import com.blakjack.clueless.client.UserEngine;
 import com.blakjack.clueless.common.CluelessMessage;
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.MessageHandler;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Connection.ConnectionEventListener;
-import com.blakjack.clueless.common.GameBoardStatus;
+import com.blakjack.clueless.common.Player;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -42,10 +41,11 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     private final CardPanel cardPanel = new CardPanel();
     private final MenuItem newGame = new MenuItem("New Game");
     private final MenuItem joinGame = new MenuItem("Join Game");
-    private final UserEngine userEngine = new UserEngine();
-    private final ButtonPad buttonPad = new ButtonPad(userEngine);
-    private static GameBoardStatus gameStatus = new GameBoardStatus();
-    private final GameBoardPanel gameBoard = new GameBoardPanel(gameStatus.getData());;
+//    private final UserEngine userEngine = new UserEngine();
+    private final Player player = new Player("");
+    private final ButtonPad buttonPad = new ButtonPad(player);
+//    private static GameBoardStatus gameStatus = new GameBoardStatus();
+    private final GameBoardPanel gameBoard = new GameBoardPanel();;
     /**
      * @param args the command line arguments
      */
@@ -130,7 +130,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 JOptionPane.OK_CANCEL_OPTION);
         if (retval == JOptionPane.OK_OPTION) {
             try {
-                userEngine.connect(startServer, loginPanel.getPort(), loginPanel.getAddress(), loginPanel.getUsername(), this);
+                player.connect(startServer, loginPanel.getPort(), loginPanel.getAddress(), loginPanel.getUsername(), this);
             } catch (UnknownHostException ex) {
                 JOptionPane.showMessageDialog(this, "Unknown host: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -144,21 +144,22 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     }
 
     private void waitInLobby(boolean startServer) {
-        LobbyDialog lobby = new LobbyDialog(startServer, userEngine);
-        userEngine.getClient().addMessageHandler(lobby);
+        LobbyDialog lobby = new LobbyDialog(startServer, player);
+        player.getClient().addMessageHandler(lobby);
 
         CluelessMessage login = new CluelessMessage(CluelessMessage.Type.LOGIN);
-        userEngine.getClient().send(login);
+        player.getClient().send(login);
 
         lobby.setModal(true);
         lobby.setVisible(true);
-        userEngine.getClient().removeMessageHandler(lobby);
+        player.getClient().removeMessageHandler(lobby);
     }
 
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
         CluelessMessage.Type type = (CluelessMessage.Type) msg.getField("type");
-        GameBoardStatus temp = (GameBoardStatus) msg.getField("status");
+        List<Player> temp = (List<Player>) msg.getField("status");
+        List<Player> gameStatus = null;
         if (temp != null)
         {
         	System.out.println(temp);
@@ -249,7 +250,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         }
         if (gameStatus != null)
         {
-        	gameBoard.setPlayerPositions(gameStatus.getData());
+        	gameBoard.setPlayerPositions(gameStatus);
         }
         gameBoard.repaint();
         
@@ -261,7 +262,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
      * @param msg
      */
     private void handleUpdate(CluelessMessage msg) {
-    	gameStatus = (GameBoardStatus) msg.getField("status");
+//    	gameStatus = (GameBoardStatus) msg.getField("status");
     }
 
     public void log(String message) {
@@ -270,7 +271,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
 
     private void shutdown() {
         if (JOptionPane.showConfirmDialog(this, "Are you sure you would like to exit?") == JOptionPane.OK_OPTION) {
-            userEngine.shutdown();
+            player.shutdown();
         }
     }
 

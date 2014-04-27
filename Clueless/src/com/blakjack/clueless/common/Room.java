@@ -1,8 +1,5 @@
 package com.blakjack.clueless.common;
 
-import com.blakjack.clueless.client.UserEngine;
-import java.util.List;
-
 public class Room
 {
    //declare attributes

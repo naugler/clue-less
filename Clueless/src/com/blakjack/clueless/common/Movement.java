@@ -1,6 +1,5 @@
 package com.blakjack.clueless.common;
 
-import com.blakjack.clueless.client.UserEngine;
 import java.util.List;
 
 public class Movement 
@@ -27,7 +26,7 @@ public class Movement
       }
       
      //left move is valid for horizontal hallways and non-leftmost rooms
-      public static boolean isLeftValid(SquareTile[] board, List<UserEngine> playerList, Player player)
+      public static boolean isLeftValid(SquareTile[] board, List<Player> playerList, Player player)
       {
          int position = player.getPosition();
          
@@ -52,7 +51,7 @@ public class Movement
             
             for (int i = 0; i < num; i++)
             {
-               int j = playerList.get(i).getPlayer().getPosition();
+               int j = playerList.get(i).getPosition();
                if (j == position - 1)
                   emptyhall = false;
             }
@@ -61,7 +60,7 @@ public class Movement
          
       }
       
-      public static boolean isRightValid(SquareTile[] board, List<UserEngine> playerList, Player player)
+      public static boolean isRightValid(SquareTile[] board, List<Player> playerList, Player player)
       {
          int position = player.getPosition();
          
@@ -86,7 +85,7 @@ public class Movement
             
             for (int i = 0; i < num; i++)
             {
-               int j = playerList.get(i).getPlayer().getPosition();
+               int j = playerList.get(i).getPosition();
                if (j == position + 1)
                   emptyhall = false;
             }
@@ -95,7 +94,7 @@ public class Movement
          
       }
       
-      public static boolean isUpValid(SquareTile[] board, List<UserEngine> playerList, Player player)
+      public static boolean isUpValid(SquareTile[] board, List<Player> playerList, Player player)
       {
          int position = player.getPosition();
          
@@ -120,7 +119,7 @@ public class Movement
             
             for (int i = 0; i < num; i++)
             {
-               int j = playerList.get(i).getPlayer().getPosition();
+               int j = playerList.get(i).getPosition();
                if (j == position - 5)
                   emptyhall = false;
             }
@@ -129,7 +128,7 @@ public class Movement
          }
       }
       
-      public static boolean isDownValid(SquareTile[] board, List<UserEngine> playerList, Player player)
+      public static boolean isDownValid(SquareTile[] board, List<Player> playerList, Player player)
       {
          int position = player.getPosition();
          
@@ -154,7 +153,7 @@ public class Movement
             
             for (int i = 0; i < num; i++)
             {
-               int j = playerList.get(i).getPlayer().getPosition();
+               int j = playerList.get(i).getPosition();
                if (j == position + 5)
                   emptyhall = false;
             }

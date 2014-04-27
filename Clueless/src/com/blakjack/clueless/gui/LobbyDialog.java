@@ -6,16 +6,17 @@
 
 package com.blakjack.clueless.gui;
 
-import com.blakjack.clueless.client.UserEngine;
 import com.blakjack.clueless.common.CluelessMessage;
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
+import com.blakjack.clueless.common.Player;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -36,12 +37,12 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
     private final JButton startButton = new JButton("Start Game");
     
     private final boolean startServer;
-    private final UserEngine userEngine;
+    private final Player player;
     
-    public LobbyDialog(boolean startServer, UserEngine client) {
+    public LobbyDialog(boolean startServer, Player client) {
         setTitle("Game Lobby");
         this.startServer = startServer;
-        this.userEngine = client;
+        this.player = client;
         initComponents();
         pack();
         client.getClient().addConnectionEventListener(new Connection.ConnectionEventListener() {
@@ -81,7 +82,7 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     CluelessMessage msg = new CluelessMessage(CluelessMessage.Type.START);
-                    userEngine.getClient().send(msg);
+                    player.getClient().send(msg);
                 }
             });
             buttonPanel.add(startButton, BorderLayout.EAST);
@@ -130,7 +131,7 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
                     JOptionPane.YES_NO_OPTION);
         }
         if (retval == JOptionPane.YES_OPTION) {
-            userEngine.shutdown();
+            player.shutdown();
             LobbyDialog.this.setVisible(false);
         }
     }
