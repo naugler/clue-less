@@ -5,6 +5,7 @@
  */
 package com.blakjack.clueless.gui;
 
+import com.blakjack.clueless.common.Card;
 import com.blakjack.clueless.common.CluelessMessage;
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.MessageHandler;
@@ -204,7 +205,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             // If the response comes in, we need to tell original user.
             case SUGGEST:
             	// Show suggestion message to user.
-                List<Card> cardsInHand = userEngine.getPlayer().getCards();
+                List<Card> cardsInHand = player.getCards();
                 List<Card> cardsToShow = new ArrayList<Card>();
                 String suggestedPerson = (String)msg.getField("person");
                 String suggestedWeapon = (String)msg.getField("weapon");
@@ -228,7 +229,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                             cardsToShow.toArray(),
                             cardsToShow.get(0));
                 }
-            	userEngine.respondToSuggestion(response, msg);
+            	player.respondToSuggestion(response, msg);
                 break;
             case RESP_SUGGEST:
             	// Show resulting card if card exists and this user made suggestion
