@@ -25,12 +25,19 @@ public class ButtonPad extends JPanel {
     private JButton rightBtn;
     private final Map<String, JButton> buttons = new HashMap<String, JButton>();
     private final Player player;
+    private SuggestionPanel suggestionPanel = new SuggestionPanel();
+    private SuggestionPanel accusationPanel = new SuggestionPanel();
     
     public ButtonPad(Player client) {
         super();
         player = client;
         initComponents();
         setAllEnabled(false);
+    }
+    
+    public void setRoomForSug(String room)
+    {
+    	suggestionPanel.setRoom(room);
     }
 
     public void setBtnEnabled(String button, boolean enable) {
@@ -58,7 +65,6 @@ public class ButtonPad extends JPanel {
         suggestBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SuggestionPanel suggestionPanel = new SuggestionPanel(player.getPosition());
                 String title = "Make Suggestion";
                 int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
                         suggestionPanel,
@@ -80,17 +86,16 @@ public class ButtonPad extends JPanel {
         accuseBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SuggestionPanel suggestionPanel = new SuggestionPanel();
                 String title = "Make Accusation";
                 int retval = JOptionPane.showConfirmDialog(ButtonPad.this,
-                        suggestionPanel,
+                        accusationPanel,
                         title,
                         JOptionPane.OK_CANCEL_OPTION);
                 if (retval == JOptionPane.OK_OPTION) {
                     System.out.println("Button pressed by this player");
-                    player.accuse(suggestionPanel.getPerson().getName(), 
-                            suggestionPanel.getWeapon().getName(), 
-                            suggestionPanel.getRoom().getName());
+                    player.accuse(accusationPanel.getPerson().getName(), 
+                            accusationPanel.getWeapon().getName(), 
+                            accusationPanel.getRoom().getName());
                 }
             }
         });

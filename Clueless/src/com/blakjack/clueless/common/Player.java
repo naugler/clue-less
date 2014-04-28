@@ -20,7 +20,7 @@ public class Player implements Serializable {
 
 	private String username;
 	// for Room class, if we use it
-	private Room room;
+	private transient Room room;
 	private int position;
 
 	// transient means it will not be sent over the wire. This way we can
@@ -34,6 +34,10 @@ public class Player implements Serializable {
 	public Room getRoom() {
 		return room;
 	}
+	
+	public void setRoom(Room room) {
+		this.room = room;
+	}
 
 	// private Connection connection;
 
@@ -46,15 +50,15 @@ public class Player implements Serializable {
 				"Miss Scarlet", Color.red);
 
 		private Character(String name, Color color) {
-			this.name = name;
+			this.charName = name;
 			this.color = color;
 		}
 
 		private Color color;
-		private String name;
+		private String charName;
 
 		public String getName() {
-			return name;
+			return charName;
 		}
 
 		public Color getColor() {
@@ -72,7 +76,7 @@ public class Player implements Serializable {
 
 		public static Character getCharacter(String name) {
 			for (Character p : Character.values()) {
-				if (p.name == name) {
+				if (p.charName.equals(name)) {
 					return p;
 				}
 			}
@@ -87,6 +91,13 @@ public class Player implements Serializable {
 
 	public Player(String name) {
 		character = Character.getCharacter(name);
+	}
+	
+	public Player(Player p) {
+		this.cards = p.getCards();
+		this.character = p.getCharacter();
+		this.position = p.getPosition();
+		this.room = p.getRoom();
 	}
 
 	public CluelessClient getClient() {
@@ -145,7 +156,7 @@ public class Player implements Serializable {
 	  
 	  public void accuse(String person, String weapon, String room)
 	  {
-		  CluelessMessage message = new CluelessMessage(Type.SUGGEST);
+		  CluelessMessage message = new CluelessMessage(Type.ACCUSE);
 	      message.setField("person", person);
 	      message.setField("weapon", weapon);
 	      message.setField("room", room);
@@ -156,6 +167,7 @@ public class Player implements Serializable {
 	  {
 		  CluelessMessage message = new CluelessMessage(Type.RESP_SUGGEST);
 		  for (String key : msg.getFields().keySet()){
+			  if (!key.equals("type"))
 			  message.setField(key, (Serializable) msg.getField(key));
 		  }
 		  message.setField("card", card);

@@ -33,7 +33,6 @@ public class Deck {
 				 */
 				swap(i,j);
 			}
-			curCard = 0;
 		}
 		else
 			System.out.println("ERROR: Cannot shuffle cards that do not exist");
@@ -62,6 +61,11 @@ public class Deck {
 			return cards[curCard++];
 		}
 		return null;
+	}
+	
+	public void restart()
+	{
+		curCard = 0;
 	}
 	/*
 	 * this is the only method here specific for our application

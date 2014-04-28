@@ -2,6 +2,7 @@ package com.blakjack.clueless.server;
 
 import com.blakjack.clueless.common.Card;
 import com.blakjack.clueless.common.CluelessMessage;
+import com.blakjack.clueless.common.GameBoard;
 import com.blakjack.clueless.common.Movement;
 import com.blakjack.clueless.common.Player;
 import com.blakjack.clueless.common.CluelessMessage.Type;
@@ -27,6 +28,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 	List<Player> users = new ArrayList<>();
 	List<Character> availChars = new ArrayList<>();
 	private static SquareTile[] gameboard = new SquareTile[NUM_SQUARES];
+	private static GameBoard board = new GameBoard();
 	private static Deck deck = new Deck();
 //	This index determines the players turn, the integer refers to the index in the players list
 	private static int playerTurnIndex = 0;
@@ -52,6 +54,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		deck.shuffle(12, 20);  // Room
 		deck.swap(6, 1);
 		deck.swap(12, 2);
+		deck.restart();
 		// Deal the crime cards so that the current card will be at the correct place
 		for (int i = 0; i < 3; i++)
 		{
@@ -108,6 +111,8 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		}
 		player.setUsername(username);
 		player.setConnection(connection);
+		player.setPosition(0);
+		player.setRoom(board.getStudy());
 		// We know that the character is unique so we can do this
 		// -1 is starting position
 		
@@ -115,16 +120,16 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		addPlayer(player);
 	}
 	
-	private Player getPlayerFromCharacter(Character p)
+	private int getPlayerFromCharacter(Character p)
 	{
-		for (Player player : users)
+		for (int i = 0; i < users.size() ; i++)
 		{
-			if (player.getCharacter().equals(p))
+			if (users.get(i).getCharacter().equals(p))
 			{
-				return player;
+				return i;
 			}
 		}
-		return null;
+		return -1;
 	}
 	
 	private void addPlayer(Player p)
@@ -153,7 +158,13 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
         private CluelessMessage buildUpdate() {
             CluelessMessage msg = new CluelessMessage(Type.UPDATE);
             System.out.println( "IN GAMEENGINE!!!! " + users);
-            msg.setField("status", new ArrayList<Player>(users));
+            List<Player> usersCopy = new ArrayList<>();
+            for (Player u : users)
+            {
+            	Player p = new Player(u);
+            	usersCopy.add(p);
+            }
+            msg.setField("status",  (Serializable) usersCopy);
             int turn = playerTurnIndex;
             int count = 0;
             for (Player u : users) {
@@ -209,21 +220,28 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                     }
                     break;
                 case START:
+                	beginGame();
                     //TODO(naugler) sanitize client message
-                    broadcast(msg);
+//                    broadcast(msg);
+                    for (Player p : users)
+                    {
+                    	msg.setField("cards", (Serializable) p.getCards());
+                    	p.getConnection().send(msg);
+                    }
                     playerTurnIndex = 0;
-                    List<String> buttons = getEnabledButtons();
+                    List<String> buttons = getEnabledButtons(users.get(playerTurnIndex));
                     message = new CluelessMessage(Type.NEXT_TURN);
                     message.setField("buttons", (Serializable) buttons);
+                    message.setField("roomroom", users.get(playerTurnIndex).getRoom().getName());
                     users.get(playerTurnIndex).getConnection().send(message);
                     break;
                 case ACCUSE:
-                	String character = (String) msg.getField("character");
+                	String character = (String) msg.getField("person");
                 	String weapon = (String) msg.getField("weapon");
                 	String room = (String) msg.getField("room");
-                    Card charact = Card.valueOf(character);
-                    Card weap = Card.valueOf(weapon);
-                    Card rm = Card.valueOf(room);
+                    Card charact = Card.getCard(character);
+                    Card weap = Card.getCard(weapon);
+                    Card rm = Card.getCard(room);
                     boolean won = false;
                     if ( deck.getCrimeCard(0).equals(charact) && deck.getCrimeCard(1).equals(weap) && deck.getCrimeCard(2).equals(rm))
                     {
@@ -241,8 +259,17 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	// Get the room that the current player is in.
                 	Player currPlayer = users.get(playerTurnIndex);
                 	String rooms = gameboard[currPlayer.getPosition()].getRoom();
+                	String roomroom = currPlayer.getRoom().getName();
 	            	msg.setField("room", rooms);
-                	
+	            	msg.setField("roomroom", roomroom);
+	            	String charcter =(String) msg.getField("person");
+	            	int index = getPlayerFromCharacter(Character.getCharacter(charcter));
+	            	if (index != -1)
+	            	{
+	            		users.get(index).setRoom(currPlayer.getRoom());
+	            		users.get(index).setPosition(currPlayer.getPosition());
+	            	}
+	            	
                 	// find out which try it is. (if a player was not able 
                 	// refute a suggestion, send the same message using type
                 	// "SUGGEST" with a + 1 "try" value to try the next 
@@ -250,7 +277,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 	            	
                 	while (offsetToSuggestTo < users.size() && refuted == false)
                 	{
-                		Player suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%6); 
+                		Player suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%users.size()); 
                 		System.out.println("Asking suggested Player " + suggPlayer.getUsername());
                 		System.out.println(msg);
 		            	suggPlayer.getConnection().send(msg);
@@ -271,7 +298,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 //                	}
                 	break;
                 case RESP_SUGGEST:
-                	String card = (String) msg.getField("card");
+                	Card card = (Card) msg.getField("card");
                 	if (card == null)
                 	{
                 		offsetToSuggestTo++;
@@ -285,7 +312,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 		message = new CluelessMessage(Type.RESP_SUGGEST);
                 		for (String key : msg.getFields().keySet())
                 		{
-                			if (key != "card")
+                			if (!key.equals("card"))
                 			{
                 				message.setField(key, (Serializable) msg.getField(key));
                 			}
@@ -312,27 +339,36 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	case "UP":
                 		// the check for if it is possible happens before we set position
                 		newPos = currPos - 5; 
+                		curPlayer.setRoom(curPlayer.getRoom().getUp());
                 		break;
                 	case "DOWN":
                 		newPos = currPos + 5;
+                		curPlayer.setRoom(curPlayer.getRoom().getDown());
                 		break;
                 	case "LEFT":
                 		newPos = currPos - 1;
+                		curPlayer.setRoom(curPlayer.getRoom().getLeft());
                 		break;
                 	case "RIGHT":
                 		newPos = currPos + 1;
+                		curPlayer.setRoom(curPlayer.getRoom().getRight());
                 		break;
                 	case "SECRET":
                 		newPos = Math.abs(currPos - 24);
+                		curPlayer.setRoom(curPlayer.getRoom().getShortcut());
                 		break;
                 	}
                 	curPlayer.setPosition(newPos);
                 	
-                	//Tell everyone that player moved
-//                	message = new CluelessMessage(Type.MOVE);
-//                	message.setField("player", curPlayer.getUsername());
-//                	message.setField("position", newPos);
-//                	broadcast(message);
+                	List<String> btns = getEnabledButtons(curPlayer);
+                	
+                	// Tell the player which buttons should be set now.
+                	message = new CluelessMessage(Type.MOVE);
+                	message.setField("buttons", (Serializable) btns);
+                	// roomroom is for the suggestionpanel so that when the player hits suggest, the correct
+                	// room will be set.
+                	message.setField("roomroom", curPlayer.getRoom().getName());
+                	curPlayer.getConnection().send(message);
                 		
                 	break;
                 case END_TURN:
@@ -341,8 +377,12 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
                 	// tell next player that it is their turn
                 	// tell game frame which moves are valid
                 	message = new CluelessMessage(Type.NEXT_TURN);
-                	List<String> button = getEnabledButtons();
+                	List<String> button = getEnabledButtons(nextPlayer);
                 	message.setField("buttons", (Serializable) button);
+                	
+                	// roomroom is here for setting the suggest panel so that the room will be the room
+                	// the user is currently in
+                	message.setField("roomroom", nextPlayer.getRoom().getName());
                 	nextPlayer.getConnection().send(message);
                 	
                 	
@@ -380,29 +420,29 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
         
     }   
     
-    private List<String> getEnabledButtons()
+    private List<String> getEnabledButtons(Player player)
     {
-    	Player nextPlayer = users.get(playerTurnIndex);
+//    	Player nextPlayer = users.get(playerTurnIndex);
     	// tell next player that it is their turn
     	// tell game frame which moves are valid
     	List<String> buttons = new LinkedList<>();
-    	if (Movement.isDownValid(gameboard, users, nextPlayer))
+    	if (Movement.isDownValid(gameboard, users, player))
     	{
     		buttons.add("DOWN");
     	}
-    	if (Movement.isLeftValid(gameboard, users, nextPlayer))
+    	if (Movement.isLeftValid(gameboard, users, player))
     	{
     		buttons.add("LEFT");
     	}
-    	if (Movement.isRightValid(gameboard, users, nextPlayer))
+    	if (Movement.isRightValid(gameboard, users, player))
     	{
     		buttons.add("RIGHT");
     	}
-    	if (Movement.isUpValid(gameboard, users, nextPlayer))
+    	if (Movement.isUpValid(gameboard, users, player))
     	{
     		buttons.add("UP");
     	}
-    	if (Movement.isShortcutValid(gameboard, nextPlayer))
+    	if (Movement.isShortcutValid(gameboard, player))
     	{
     		buttons.add("SECRET");
     	}

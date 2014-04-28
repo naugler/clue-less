@@ -160,7 +160,6 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
 
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
-        System.out.println("GAMEFRAME HANDLE: "+msg);
         CluelessMessage.Type type = (CluelessMessage.Type) msg.getField("type");
         List<Player> temp = (List<Player>) msg.getField("status");
         List<Player> gameStatus = null;
@@ -181,6 +180,13 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 log("User " + msg.getField("username") + " has left.");
                 break;
             case START:
+            	List<Card> cards = (List<Card>)msg.getField("cards");
+            	cardPanel.setCards(cards);
+            	cardPanel.repaint();
+            	for (Card c : cards)
+            	{
+            		player.dealCard(c);
+            	}
             	buttonPad.setAllEnabled(false);
             	break;
             case MESSAGE:
@@ -194,12 +200,15 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	boolean won = (boolean) msg.getField("win");
             	if (won)
             	{
-            		// Show appropriate message
+            		JOptionPane.showMessageDialog(this, "SOMEONE Won the game!!!!!");// Show appropriate message
             	}
             	else
             	{
+            		JOptionPane.showMessageDialog(this, "Someone lost the game!!!");
             		// Show appropriate message
             	}
+            	// Do something to exit
+            	break;
             // Note: Do opposite since message is coming from the server 
             // So when suggest comes in, we need to respond to the suggestion
             // If the response comes in, we need to tell original user.
@@ -209,7 +218,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 List<Card> cardsToShow = new ArrayList<Card>();
                 String suggestedPerson = (String)msg.getField("person");
                 String suggestedWeapon = (String)msg.getField("weapon");
-                String suggestedRoom = "?"; //todo(naugler) how do i get the suggested room?
+                String suggestedRoom = (String) msg.getField("roomroom");// "?"; //todo(naugler) how do i get the suggested room?
                 for (Card card : cardsInHand) {
                     if (card.getName().equalsIgnoreCase(suggestedPerson) ||
                             card.getName().equalsIgnoreCase(suggestedWeapon) ||
@@ -219,6 +228,9 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 }
                 Card response = null;
                 if (cardsToShow.isEmpty()) {
+                	JOptionPane.showMessageDialog(this, "You were asked to refute suggestion but do not have any cards.");
+                	msg.setField("type", type.RESP_SUGGEST);
+                	player.getClient().send(msg);
                     //todo(naugler)show dialog?
                 } else {
                     response = (Card)JOptionPane.showInputDialog(this, 
@@ -232,12 +244,38 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	player.respondToSuggestion(response, msg);
                 break;
             case RESP_SUGGEST:
+            	Card c = (Card)msg.getField("card");
+            	if (c != null)
+            	{
+            		JOptionPane.showMessageDialog(this, "Someone Showed you the card " + c.getName() + 
+            				". Once you hit OK, you will not be able to view the card anymore.");
+            	}
             	// Show resulting card if card exists and this user made suggestion
 
 //            	//THe suggest method will be called on the suggest button
 //            	userEngine.makeSuggestion(person, weapon);
             	break;
             case MOVE:
+            	Object object = msg.getField("buttons");
+            	List<String> butons = null;
+            	buttonPad.setAllEnabled(false);
+            	if (object instanceof List)
+            	{
+            		butons = (List<String>) object;
+            	}
+            	for (String button : butons)
+            	{
+            		if (!button.equals("UP") && !button.equals("DOWN") && !button.equals("LEFT") && !button.equals("RIGHT") && !button.equals("SECRET"))
+            		{
+            			buttonPad.setBtnEnabled(button, true);
+            		}
+            		else
+            		{
+            			buttonPad.setBtnEnabled(button, false);
+            		}
+            	}
+            	buttonPad.setRoomForSug((String ) msg.getField("roomroom"));
+            	
 //            	String player = (String) msg.getField("player");
 //            	int pos = (int) msg.getField("position");
 //            	System.out.println("Player " + player + " new position " + pos + "if up should be -6" );
@@ -266,6 +304,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	{
             		buttonPad.setBtnEnabled(button, true);
             	}
+            	buttonPad.setRoomForSug((String ) msg.getField("roomroom"));
             	
             	break;
             default:

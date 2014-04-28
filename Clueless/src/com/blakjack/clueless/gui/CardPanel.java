@@ -7,11 +7,14 @@
 package com.blakjack.clueless.gui;
 
 import com.blakjack.clueless.common.Card;
+
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
@@ -36,12 +39,14 @@ public class CardPanel extends JPanel {
         setPreferredSize(new Dimension(150,250));
         
         //just some in-place testing...
-        setCards(Card.MUSTARD, Card.GREEN, Card.PEACOCK);
+//        setCards(Card.MUSTARD, Card.GREEN, Card.PEACOCK);
     }
     
-    public void setCards(Card... newCards) {
+    public void setCards(List<Card> newCards) {
         cards.clear();
         for (Card card : newCards) {
+        	System.out.println("card_"+card.name().toLowerCase()+".png");
+        	System.out.println(getClass().getClassLoader().getResource("card_"+card.name().toLowerCase()+".png"));
             cards.put(card, new ImageIcon(getClass().getClassLoader().getResource("card_"+card.name().toLowerCase()+".png")));
         }
     }

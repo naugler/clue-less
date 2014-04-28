@@ -30,18 +30,7 @@ public class SuggestionPanel extends JPanel {
     public SuggestionPanel() {
         initComponents();
     }
-    /**
-     * This constructor is for the suggest box where the room is given and cannot be changed
-     * @param position
-     */
-    public SuggestionPanel(int position)
-    {
-    	initComponents();
-    	// TODO: change the 0 to correspond to the position of the player
-    	roomComboBox.setSelectedIndex(0);
-    	roomComboBox.setEnabled(false);
-    }
-    
+
     private void initComponents() {
         setLayout(new GridBagLayout());
         
@@ -74,6 +63,17 @@ public class SuggestionPanel extends JPanel {
     
     public Card getRoom() {
         return (Card)roomComboBox.getSelectedItem();
+    }
+    
+    public void setRoom(String room) {
+    	Card c = Card.getCard(room);
+    	roomComboBox.setSelectedItem(c);
+    	roomComboBox.setEnabled(false);
+    }
+    
+    public void resetRoom(){
+    	roomComboBox.setSelectedIndex(0);
+    	roomComboBox.setEnabled(true);
     }
     
 }
