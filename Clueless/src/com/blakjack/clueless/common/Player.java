@@ -13,11 +13,14 @@ import com.blakjack.clueless.gui.GameFrame;
 import com.blakjack.clueless.server.CluelessServer;
 
 public class Player implements Serializable {
+    
+    private static final long serialVersionUID = 1;
 
     private final Character character;
 
     private String username;
     // for Room class, if we use it
+    private static final transient GameBoard board = new GameBoard();
     private transient Room room;
     private int position;
 
@@ -39,22 +42,24 @@ public class Player implements Serializable {
 
     public enum Character {
 
-        MUSTARD("Colonel Mustard", Color.yellow, 9), 
-        WHITE("Mrs. White", Color.white, 23), 
-        PLUM("Professor Plum", new Color(127, 0, 255), 5), // Purple
-        PEACOCK("Mrs. Peacock", Color.blue, 15), 
-        GREEN("Mr. Green", Color.green, 21), 
-        SCARLET("Miss Scarlet", Color.red, 3);
+        MUSTARD("Colonel Mustard", Color.yellow, 9, board.getLounge().getDown()), 
+        WHITE("Mrs. White", Color.white, 23, board.getKitchen().getLeft()), 
+        PLUM("Professor Plum", new Color(127, 0, 255), 5, board.getStudy().getDown()), // Purple
+        PEACOCK("Mrs. Peacock", Color.blue, 15, board.getLibrary().getDown()), 
+        GREEN("Mr. Green", Color.green, 21, board.getBallroom().getLeft()), 
+        SCARLET("Miss Scarlet", Color.red, 3, board.getLounge().getLeft());
 
-        private Character(String name, Color color, int homePos) {
+        private Character(String name, Color color, int homePos, Room homeRoom) {
             this.charName = name;
             this.color = color;
             this.homePos = homePos;
+            this.homeRoom = homeRoom;
         }
 
         private final Color color;
         private final String charName;
         private final int homePos;
+        private final Room homeRoom;
 
         public String getName() {
             return charName;
@@ -66,6 +71,10 @@ public class Player implements Serializable {
 
         public int getHomePos() {
             return homePos;
+        }
+        
+        public Room getHomeRoom() {
+            return homeRoom;
         }
 
         public static Character getCharacter(Color color) {
@@ -166,11 +175,11 @@ public class Player implements Serializable {
 
     public void respondToSuggestion(Card card, CluelessMessage msg) {
         CluelessMessage message = new CluelessMessage(Type.RESP_SUGGEST);
-        for (String key : msg.getFields().keySet()) {
-            if (!key.equals("type")) {
-                message.setField(key, (Serializable) msg.getField(key));
-            }
-        }
+//        for (String key : msg.getFields().keySet()) {
+//            if (!key.equals("type")) {
+//                message.setField(key, (Serializable) msg.getField(key));
+//            }
+//        }
         message.setField("card", card);
         sendToServer(message);
     }

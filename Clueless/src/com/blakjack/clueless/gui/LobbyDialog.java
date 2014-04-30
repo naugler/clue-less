@@ -105,7 +105,6 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
                     public void run() {//clear table model
                         startButton.setEnabled(false);
                         for (int i = playerModel.getRowCount()-1; i >= 0; --i) {
-                            System.out.println("removing row");
                             playerModel.removeRow(i);
                         }
                         //add all players in update

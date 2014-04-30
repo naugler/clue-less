@@ -28,8 +28,6 @@ public class CardPanel extends JPanel {
     
     private static final int VERT_GAP = 30;
     private static final int HORIZ_GAP = 20;
-    private int mouseX = Integer.MIN_VALUE;
-    private int mouseY = Integer.MIN_VALUE;
     
     Map<Card, ImageIcon> cards = new HashMap<Card, ImageIcon>();
     
@@ -37,16 +35,11 @@ public class CardPanel extends JPanel {
         TitledBorder border = new TitledBorder("Clue Cards");
         setBorder(border);
         setPreferredSize(new Dimension(150,250));
-        
-        //just some in-place testing...
-//        setCards(Card.MUSTARD, Card.GREEN, Card.PEACOCK);
     }
     
     public void setCards(List<Card> newCards) {
         cards.clear();
         for (Card card : newCards) {
-        	System.out.println("card_"+card.name().toLowerCase()+".png");
-        	System.out.println(getClass().getClassLoader().getResource("card_"+card.name().toLowerCase()+".png"));
             cards.put(card, new ImageIcon(getClass().getClassLoader().getResource("card_"+card.name().toLowerCase()+".png")));
         }
     }
@@ -65,7 +58,5 @@ public class CardPanel extends JPanel {
             ++count;
         }
     }
-    
-    
     
 }

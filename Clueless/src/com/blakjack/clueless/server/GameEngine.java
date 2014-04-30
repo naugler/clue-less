@@ -112,7 +112,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		player.setUsername(username);
 		player.setConnection(connection);
 		player.setPosition(player.getCharacter().getHomePos());
-		player.setRoom(board.getStudy());
+		player.setRoom(player.getCharacter().getHomeRoom());
 		// We know that the character is unique so we can do this
 		// -1 is starting position
 		
@@ -189,209 +189,191 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
-    	// This is a message that may be needed to pass along a different message
-    	// Was having problems instantiating multiple messages in different case values...
-    		CluelessMessage message;
-            Type type = (Type)msg.getField("type");
-            switch(type) {
-                case LOGIN:
-                    if (users.size() < 6) {
-                        String newUser = msg.getField("source").toString();
-                        for (Player u : users) {
-                            if (u.getUsername().equalsIgnoreCase(newUser)) {
-                                CluelessMessage error = new CluelessMessage(Type.ERROR);
-                                error.setField("error", "Username already exists");
-                                connection.send(error);
-                                connection.close();
-                                return;
-                            }
+        CluelessMessage response;
+        Type type = (Type)msg.getField("type");
+        switch(type) {
+            case LOGIN:
+                if (users.size() < 6) {
+                    String newUser = msg.getField("source").toString();
+                    for (Player u : users) {
+                        if (u.getUsername().equalsIgnoreCase(newUser)) {
+                            CluelessMessage error = new CluelessMessage(Type.ERROR);
+                            error.setField("error", "Username already exists");
+                            connection.send(error);
+                            connection.close();
+                            return;
                         }
-                        createPlayer(msg.getField("source").toString(), connection);
-                        CluelessMessage response = new CluelessMessage(Type.MESSAGE);
-                        response.setField("message", "Welcome "+newUser+"!");
-                        broadcast(response);
-//                        broadcast(buildUpdate());
-                    } else {
-                        CluelessMessage error = new CluelessMessage(Type.ERROR);
-                        error.setField("error", "Game is full.");
-                        connection.send(error);
-                        connection.close();
-                        return;
                     }
-                    break;
-                case START:
-                	beginGame();
-                    //TODO(naugler) sanitize client message
-//                    broadcast(msg);
-                    for (Player p : users)
-                    {
-                    	msg.setField("cards", (Serializable) p.getCards());
-                    	p.getConnection().send(msg);
-                    }
-                    playerTurnIndex = 0;
-                    List<String> buttons = getEnabledButtons(users.get(playerTurnIndex));
-                    message = new CluelessMessage(Type.NEXT_TURN);
-                    message.setField("buttons", (Serializable) buttons);
-                    message.setField("roomroom", users.get(playerTurnIndex).getRoom().getName());
-                    users.get(playerTurnIndex).getConnection().send(message);
-                    break;
-                case ACCUSE:
-                	String character = (String) msg.getField("person");
-                	String weapon = (String) msg.getField("weapon");
-                	String room = (String) msg.getField("room");
-                    Card charact = Card.getCard(character);
-                    Card weap = Card.getCard(weapon);
-                    Card rm = Card.getCard(room);
-                    boolean won = false;
-                    if ( deck.getCrimeCard(0).equals(charact) && deck.getCrimeCard(1).equals(weap) && deck.getCrimeCard(2).equals(rm))
-                    {
-                    	won = true;
-                    }
-                    msg.setField("win", won);
-                    msg.setField("name", users.get(playerTurnIndex).getUsername());
-                    broadcast(msg);
-                    break;
-                case SUGGEST:
-                	// make sure to move the player who is the character to the room
-                	offsetToSuggestTo = 1;
-                	refuted = false;
-                	System.out.println("IN Game Engine first time!!");
-                	// Get the room that the current player is in.
-                	Player currPlayer = users.get(playerTurnIndex);
-                	String rooms = gameboard[currPlayer.getPosition()].getRoom();
-                	String roomroom = currPlayer.getRoom().getName();
-	            	msg.setField("room", rooms);
-	            	msg.setField("roomroom", roomroom);
-	            	String charcter =(String) msg.getField("person");
-	            	int index = getPlayerFromCharacter(Character.getCharacter(charcter));
-	            	if (index != -1)
-	            	{
-	            		users.get(index).setRoom(currPlayer.getRoom());
-	            		users.get(index).setPosition(currPlayer.getPosition());
-	            	}
-	            	
-                	// find out which try it is. (if a player was not able 
-                	// refute a suggestion, send the same message using type
-                	// "SUGGEST" with a + 1 "try" value to try the next 
-                	// player.
-	            	
-                	while (offsetToSuggestTo < users.size() && refuted == false)
-                	{
-                		Player suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%users.size()); 
-                		System.out.println("Asking suggested Player " + suggPlayer.getUsername());
-                		System.out.println(msg);
-		            	suggPlayer.getConnection().send(msg);
-		            	synchronized(this)
-		            	{
-		            		try {
-								this.wait();
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-		            	}
-                	}
-//                	if (offsetToSuggestTo < 6)
-//                	{
-//		            	UserEngine suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%6); 
-//		            	suggPlayer.getPlayer().getConnection().send(msg);
-//                	}
-                	break;
-                case RESP_SUGGEST:
-                	Card card = (Card) msg.getField("card");
-                	if (card == null)
-                	{
-                		offsetToSuggestTo++;
-                	}
-                	// If player refuted suggestion, send current player the card
-                	// Send the rest of the players the results. (without the card)
-                	else
-                	{
-                		refuted = true;
-                		users.get(playerTurnIndex).getConnection().send(msg);
-                		message = new CluelessMessage(Type.RESP_SUGGEST);
-                		for (String key : msg.getFields().keySet())
-                		{
-                			if (!key.equals("card"))
-                			{
-                				message.setField(key, (Serializable) msg.getField(key));
-                			}
-                		}
-                		broadcast(message);
-                		
-                	}
-                	synchronized(this)
-                	{
-                		this.notifyAll();
-                	}
-                	break;
-                case MOVE:
-                	
-                	String direction = (String) msg.getField("direction");
-                	System.out.println( "in GAME ENGINE direction " + direction);
-                	Player curPlayer = users.get(playerTurnIndex);
-                	int currPos = curPlayer.getPosition();
-                	int newPos = currPos;
-                	// If move is allowed for current player
-                	// TODO: Do CHECK HERE
-                	switch (direction)
-                	{
-                	case "UP":
-                		// the check for if it is possible happens before we set position
-                		newPos = currPos - 5; 
-                		curPlayer.setRoom(curPlayer.getRoom().getUp());
-                		break;
-                	case "DOWN":
-                		newPos = currPos + 5;
-                		curPlayer.setRoom(curPlayer.getRoom().getDown());
-                		break;
-                	case "LEFT":
-                		newPos = currPos - 1;
-                		curPlayer.setRoom(curPlayer.getRoom().getLeft());
-                		break;
-                	case "RIGHT":
-                		newPos = currPos + 1;
-                		curPlayer.setRoom(curPlayer.getRoom().getRight());
-                		break;
-                	case "SECRET":
-                		newPos = Math.abs(currPos - 24);
-                		curPlayer.setRoom(curPlayer.getRoom().getShortcut());
-                		break;
-                	}
-                	curPlayer.setPosition(newPos);
-                	
-                	List<String> btns = getEnabledButtons(curPlayer);
-                	
-                	// Tell the player which buttons should be set now.
-                	message = new CluelessMessage(Type.MOVE);
-                	message.setField("buttons", (Serializable) btns);
-                	// roomroom is for the suggestionpanel so that when the player hits suggest, the correct
-                	// room will be set.
-                	message.setField("roomroom", curPlayer.getRoom().getName());
-                	curPlayer.getConnection().send(message);
-                		
-                	break;
-                case END_TURN:
-                	playerTurnIndex = (playerTurnIndex + 1 ) % users.size();
-                	Player nextPlayer = users.get(playerTurnIndex);
-                	// tell next player that it is their turn
-                	// tell game frame which moves are valid
-                	message = new CluelessMessage(Type.NEXT_TURN);
-                	List<String> button = getEnabledButtons(nextPlayer);
-                	message.setField("buttons", (Serializable) button);
-                	
-                	// roomroom is here for setting the suggest panel so that the room will be the room
-                	// the user is currently in
-                	message.setField("roomroom", nextPlayer.getRoom().getName());
-                	nextPlayer.getConnection().send(message);
-                	
-                	
-                default:
+                    createPlayer(msg.getField("source").toString(), connection);
+                    response = new CluelessMessage(Type.MESSAGE);
+                    response.setField("message", "Welcome "+newUser+"!");
+                    broadcast(response);
+                } else {
                     CluelessMessage error = new CluelessMessage(Type.ERROR);
-                    error.setField("error", "Unknown message type "+type);
-                    connection.send(msg);
-            }
-            broadcast(buildUpdate());
+                    error.setField("error", "Game is full.");
+                    connection.send(error);
+                    connection.close();
+                    return;
+                }
+                break;
+            case START:
+                beginGame();
+                //TODO(naugler) sanitize client message
+//                    broadcast(msg);
+                for (Player p : users) {
+                    msg.setField("cards", (Serializable) p.getCards());
+                    p.getConnection().send(msg);
+                }
+                playerTurnIndex = 0;
+                List<String> buttons = getEnabledButtons(users.get(playerTurnIndex));
+                CluelessMessage message = new CluelessMessage(Type.NEXT_TURN);
+                message.setField("buttons", (Serializable) buttons);
+                message.setField("roomroom", users.get(playerTurnIndex).getRoom().getName());
+                users.get(playerTurnIndex).getConnection().send(message);
+                break;
+            case ACCUSE:
+                String character = (String) msg.getField("person");
+                String weapon = (String) msg.getField("weapon");
+                String room = (String) msg.getField("room");
+                Card charact = Card.getCard(character);
+                Card weap = Card.getCard(weapon);
+                Card rm = Card.getCard(room);
+                boolean won = false;
+                if ( deck.getCrimeCard(0).equals(charact) 
+                        && deck.getCrimeCard(1).equals(weap) 
+                        && deck.getCrimeCard(2).equals(rm)) {
+                    won = true;
+                }
+                msg.setField("win", won);
+                msg.setField("name", users.get(playerTurnIndex).getUsername());
+                broadcast(msg);
+                break;
+            case SUGGEST:
+                String suspect =(String) msg.getField("person");
+                response = new CluelessMessage(Type.MESSAGE);
+                response.setField("message", suspect+" is a suspect!");
+                broadcast(response);
+
+                //first, move the accused!
+                Player player = users.get(playerTurnIndex);
+                int index = getPlayerFromCharacter(Character.getCharacter(suspect));
+                if (index != -1) {
+                    users.get(index).setRoom(player.getRoom());
+                    users.get(index).setPosition(player.getPosition());
+                }
+                broadcast(buildUpdate());
+
+                offsetToSuggestTo = 1;
+                refuted = false;
+                String rooms = gameboard[player.getPosition()].getRoom();
+                String roomroom = player.getRoom().getName();
+                msg.setField("room", rooms);
+                msg.setField("roomroom", roomroom);
+
+                // find out which try it is. (if a player was not able 
+                // refute a suggestion, send the same message using type
+                // "SUGGEST" with a + 1 "try" value to try the next 
+                // player.
+                while (offsetToSuggestTo < users.size() && refuted == false) {
+                    Player suggPlayer = users.get((playerTurnIndex + offsetToSuggestTo)%users.size()); 
+                    System.out.println("Asking suggested Player " + suggPlayer.getUsername());
+                    System.out.println(msg);
+                    suggPlayer.getConnection().send(msg);
+                    synchronized(this) {
+                        try {
+                            this.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace(System.err);
+                        }
+                    }
+                }
+                if (refuted == false) {
+                    response = new CluelessMessage(Type.MESSAGE);
+                    response.setField("message", "The suggestion was not refuted.");
+                    broadcast(response);
+                }
+                break;
+            case RESP_SUGGEST:
+                Card card = (Card) msg.getField("card");
+                if (card == null) {
+                    //the previous user was unable to refute the suggestion.
+                    offsetToSuggestTo++;
+                } else {
+                    // If player refuted suggestion, send current player the card
+                    refuted = true;
+                    users.get(playerTurnIndex).getConnection().send(msg);
+                    // Send the rest of the players the results. (without the card)
+                    response = new CluelessMessage(Type.MESSAGE);
+                    response.setField("message", msg.getField("source")+" refuted the suggestion.");
+                    broadcast(response);
+                }
+                synchronized(this) {
+                    this.notifyAll();
+                }
+                break;
+            case MOVE:
+                String direction = (String) msg.getField("direction");
+                System.out.println( "in GAME ENGINE direction " + direction);
+                Player curPlayer = users.get(playerTurnIndex);
+                int currPos = curPlayer.getPosition();
+                int newPos = currPos;
+                // If move is allowed for current player
+                // TODO: Do CHECK HERE
+                switch (direction) {
+                case "UP":
+                    // the check for if it is possible happens before we set position
+                    newPos = currPos - 5; 
+                    curPlayer.setRoom(curPlayer.getRoom().getUp());
+                    break;
+                case "DOWN":
+                    newPos = currPos + 5;
+                    curPlayer.setRoom(curPlayer.getRoom().getDown());
+                    break;
+                case "LEFT":
+                    newPos = currPos - 1;
+                    curPlayer.setRoom(curPlayer.getRoom().getLeft());
+                    break;
+                case "RIGHT":
+                    newPos = currPos + 1;
+                    curPlayer.setRoom(curPlayer.getRoom().getRight());
+                    break;
+                case "SECRET":
+                    newPos = Math.abs(currPos - 24);
+                    curPlayer.setRoom(curPlayer.getRoom().getShortcut());
+                    break;
+                }
+                curPlayer.setPosition(newPos);
+
+                List<String> btns = getEnabledButtons(curPlayer);
+
+                // Tell the player which buttons should be set now.
+                response = new CluelessMessage(Type.MOVE);
+                response.setField("buttons", (Serializable) btns);
+                // roomroom is for the suggestionpanel so that when the player hits suggest, the correct
+                // room will be set.
+                response.setField("roomroom", curPlayer.getRoom().getName());
+                curPlayer.getConnection().send(response);
+
+                break;
+            case END_TURN:
+                playerTurnIndex = (playerTurnIndex + 1 ) % users.size();
+                Player nextPlayer = users.get(playerTurnIndex);
+                // tell next player that it is their turn
+                // tell game frame which moves are valid
+                message = new CluelessMessage(Type.NEXT_TURN);
+                List<String> button = getEnabledButtons(nextPlayer);
+                message.setField("buttons", (Serializable) button);
+
+                // roomroom is here for setting the suggest panel so that the room will be the room
+                // the user is currently in
+                message.setField("roomroom", nextPlayer.getRoom().getName());
+                nextPlayer.getConnection().send(message);
+            default:
+                CluelessMessage error = new CluelessMessage(Type.ERROR);
+                error.setField("error", "Unknown message type "+type);
+                connection.send(msg);
+        }
+        broadcast(buildUpdate());
 /*   
  * Server Received Messages:
  *  get Player and port

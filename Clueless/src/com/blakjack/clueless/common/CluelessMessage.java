@@ -14,6 +14,8 @@ import java.util.Map.Entry;
  */
 public class CluelessMessage implements Serializable {
     
+    private static final long serialVersionUID = 1;
+    
     public enum Type {
         ERROR,      //for sending an error
         LOGIN,      //for logging in (duh)
