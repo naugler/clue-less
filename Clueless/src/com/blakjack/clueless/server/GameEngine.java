@@ -111,7 +111,7 @@ public class GameEngine implements Connection.MessageHandler, Connection.Connect
 		}
 		player.setUsername(username);
 		player.setConnection(connection);
-		player.setPosition(0);
+		player.setPosition(player.getCharacter().getHomePos());
 		player.setRoom(board.getStudy());
 		// We know that the character is unique so we can do this
 		// -1 is starting position

@@ -14,231 +14,231 @@ import com.blakjack.clueless.server.CluelessServer;
 
 public class Player implements Serializable {
 
-	// private int position = -1;
+    private final Character character;
 
-	private Character character;
+    private String username;
+    // for Room class, if we use it
+    private transient Room room;
+    private int position;
 
-	private String username;
-	// for Room class, if we use it
-	private transient Room room;
-	private int position;
+    // transient means it will not be sent over the wire. This way we can
+    // use this class to send to everybody without worrying about accidentally
+    // sending the player's cards
+    private transient Connection connection;
+    private transient List<Card> cards = new ArrayList<Card>();
+    private transient CluelessServer server;
+    private transient CluelessClient client;
 
-	// transient means it will not be sent over the wire. This way we can
-	// use this class to send to everybody without worrying about accidentally
-	// sending the player's cards
-	private transient Connection connection;
-	private transient List<Card> cards = new ArrayList<Card>();
-	private transient CluelessServer server;
-	private transient CluelessClient client;
+    public Room getRoom() {
+        return room;
+    }
 
-	public Room getRoom() {
-		return room;
-	}
-	
-	public void setRoom(Room room) {
-		this.room = room;
-	}
+    public void setRoom(Room room) {
+        this.room = room;
+    }
 
-	// private Connection connection;
+    public enum Character {
 
-	// private ArrayList<Card> cards = new ArrayList<Card>();
+        MUSTARD("Colonel Mustard", Color.yellow, 9), 
+        WHITE("Mrs. White", Color.white, 23), 
+        PLUM("Professor Plum", new Color(127, 0, 255), 5), // Purple
+        PEACOCK("Mrs. Peacock", Color.blue, 15), 
+        GREEN("Mr. Green", Color.green, 21), 
+        SCARLET("Miss Scarlet", Color.red, 3);
 
-	public enum Character {
-		MUSTARD("Colonel Mustard", Color.yellow), WHITE("Mrs. White",
-				Color.white), PLUM("Professor Plum", new Color(127, 0, 255)), // Purple
-		PEACOCK("Mrs. Peacock", Color.blue), GREEN("Mr. Green", Color.green), SCARLET(
-				"Miss Scarlet", Color.red);
+        private Character(String name, Color color, int homePos) {
+            this.charName = name;
+            this.color = color;
+            this.homePos = homePos;
+        }
 
-		private Character(String name, Color color) {
-			this.charName = name;
-			this.color = color;
-		}
+        private final Color color;
+        private final String charName;
+        private final int homePos;
 
-		private Color color;
-		private String charName;
+        public String getName() {
+            return charName;
+        }
 
-		public String getName() {
-			return charName;
-		}
+        public Color getColor() {
+            return color;
+        }
 
-		public Color getColor() {
-			return color;
-		}
+        public int getHomePos() {
+            return homePos;
+        }
 
-		public static Character getCharacter(Color color) {
-			for (Character p : Character.values()) {
-				if (p.color.equals(color)) {
-					return p;
-				}
-			}
-			return null;
-		}
+        public static Character getCharacter(Color color) {
+            for (Character p : Character.values()) {
+                if (p.color.equals(color)) {
+                    return p;
+                }
+            }
+            return null;
+        }
 
-		public static Character getCharacter(String name) {
-			for (Character p : Character.values()) {
-				if (p.charName.equals(name)) {
-					return p;
-				}
-			}
-			return null;
-		}
+        public static Character getCharacter(String name) {
+            for (Character p : Character.values()) {
+                if (p.charName.equals(name)) {
+                    return p;
+                }
+            }
+            return null;
+        }
 
-	}
+    }
 
-	public Player(Color color) {
-		character = Character.getCharacter(color);
-	}
+    public Player(Color color) {
+        character = Character.getCharacter(color);
+    }
 
-	public Player(String name) {
-		character = Character.getCharacter(name);
-	}
-	
-	public Player(Player p) {
-		this.cards = p.getCards();
-		this.character = p.getCharacter();
-		this.position = p.getPosition();
-		this.room = p.getRoom();
-	}
+    public Player(String name) {
+        character = Character.getCharacter(name);
+    }
 
-	public CluelessClient getClient() {
-		return client;
-	}
+    public Player(Player p) {
+        this.cards = p.getCards();
+        this.character = p.getCharacter();
+        this.position = p.getPosition();
+        this.room = p.getRoom();
+    }
 
-	public void setClient(CluelessClient client) {
-		this.client = client;
-	}
+    public CluelessClient getClient() {
+        return client;
+    }
 
-	public Character getCharacter() {
-		return character;
-	}
+    public void setClient(CluelessClient client) {
+        this.client = client;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public Character getCharacter() {
+        return character;
+    }
 
-	public void setUsername(String name) {
-		username = name;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public Connection getConnection() {
-		return connection;
-	}
+    public void setUsername(String name) {
+        username = name;
+    }
 
-	public void setConnection(Connection connection) {
-		this.connection = connection;
-	}
+    public Connection getConnection() {
+        return connection;
+    }
 
-	public void dealCard(Card c) {
-		cards.add(c);
-	}
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 
-	public List<Card> getCards() {
-		return cards;
-	}
+    public void dealCard(Card c) {
+        cards.add(c);
+    }
 
-	public int getPosition() {
-		return position;
-	}
+    public List<Card> getCards() {
+        return cards;
+    }
 
-	public void setPosition(int pos) {
-		position = pos;
-	}
-	
-	public void makeSuggestion(String person, String weapon )
-	  {
-		  System.out.println("In UserEngine  Person = " + person + " weapon = " + weapon);
-		  CluelessMessage message = new CluelessMessage(Type.SUGGEST);
-	      message.setField("person", person);
-	      message.setField("weapon", weapon);
-	      System.out.println(message);
-	      sendToServer(message);
-	  }
-	  
-	  public void accuse(String person, String weapon, String room)
-	  {
-		  CluelessMessage message = new CluelessMessage(Type.ACCUSE);
-	      message.setField("person", person);
-	      message.setField("weapon", weapon);
-	      message.setField("room", room);
-	      sendToServer(message);
-	  }
-	  
-	  public void respondToSuggestion(Card card, CluelessMessage msg)
-	  {
-		  CluelessMessage message = new CluelessMessage(Type.RESP_SUGGEST);
-		  for (String key : msg.getFields().keySet()){
-			  if (!key.equals("type"))
-			  message.setField(key, (Serializable) msg.getField(key));
-		  }
-		  message.setField("card", card);
-		  sendToServer(message);
-	  }
-	  
-	  /*
-	   * includes UP, DOWN, LEFT, RIGHT, and SECRET
-	   */
-	  public void move(String direction)
-	  {
-		  System.out.println(" In USER ENGINE direction " + direction);
-		  // If direction is allowed
-		  CluelessMessage msg = new CluelessMessage(Type.MOVE);
-		  msg.setField("direction", direction);
-		  sendToServer(msg);
-		  
-	  }
-	  
-	  public void endTurn()
-	  {
-		  CluelessMessage msg = new CluelessMessage(Type.END_TURN);
-		  sendToServer(msg);
-	  }
-	  
-	  public void sendToServer(CluelessMessage msg) {
-	      client.send(msg);
-	  }
-	  
-	  public void sendToClient(CluelessMessage msg) {
-	      connection.send(msg);
-	  }
-	  
-	  public void connect(boolean startServer, int port, String address, String username, GameFrame gameFrame) throws IOException,UnknownHostException {	  
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int pos) {
+        position = pos;
+    }
+
+    public void makeSuggestion(String person, String weapon) {
+        System.out.println("In UserEngine  Person = " + person + " weapon = " + weapon);
+        CluelessMessage message = new CluelessMessage(Type.SUGGEST);
+        message.setField("person", person);
+        message.setField("weapon", weapon);
+        System.out.println(message);
+        sendToServer(message);
+    }
+
+    public void accuse(String person, String weapon, String room) {
+        CluelessMessage message = new CluelessMessage(Type.ACCUSE);
+        message.setField("person", person);
+        message.setField("weapon", weapon);
+        message.setField("room", room);
+        sendToServer(message);
+    }
+
+    public void respondToSuggestion(Card card, CluelessMessage msg) {
+        CluelessMessage message = new CluelessMessage(Type.RESP_SUGGEST);
+        for (String key : msg.getFields().keySet()) {
+            if (!key.equals("type")) {
+                message.setField(key, (Serializable) msg.getField(key));
+            }
+        }
+        message.setField("card", card);
+        sendToServer(message);
+    }
+
+    /*
+     * includes UP, DOWN, LEFT, RIGHT, and SECRET
+     */
+    public void move(String direction) {
+        System.out.println(" In USER ENGINE direction " + direction);
+        // If direction is allowed
+        CluelessMessage msg = new CluelessMessage(Type.MOVE);
+        msg.setField("direction", direction);
+        sendToServer(msg);
+
+    }
+
+    public void endTurn() {
+        CluelessMessage msg = new CluelessMessage(Type.END_TURN);
+        sendToServer(msg);
+    }
+
+    public void sendToServer(CluelessMessage msg) {
+        client.send(msg);
+    }
+
+    public void sendToClient(CluelessMessage msg) {
+        connection.send(msg);
+    }
+
+    public void connect(boolean startServer, int port, String address, String username, GameFrame gameFrame) throws IOException, UnknownHostException {
 		  //TODO: Maybe here????
 //		  this.username = username;
-	          //TODO(naugler) validate login parameters
-	          if (startServer) {
-	              server = new CluelessServer(port);
-	              try {
-	                  server.start();
-	              } catch (IOException ex) {
-	            	  server.stop();
-	            	  throw ex;
-	              }
-	          }
-	          client = new CluelessClient(username,address, port);
-	          client.addMessageHandler(gameFrame);
-	          client.addConnectionEventListener(gameFrame);
-	          try {
-	              client.start();
-	          } catch (UnknownHostException ex) {
-	        	  client.stop();
-	        	  throw ex;
-	          } catch (IOException ex) {
-	        	  client.stop();
-	        	  throw ex;
-	          }
-	  }
-	  
-	  public void shutdown() {
-	      if (client != null) {
-	          client.stop();
-	      }
-	      if (server != null) {
-	          server.stop();
-	      }
-	  }
-	  public String toString(){
-		  String str = "Player: " + username + " Position: " + position;
-		  return str;
-	  }
+        //TODO(naugler) validate login parameters
+        if (startServer) {
+            server = new CluelessServer(port);
+            try {
+                server.start();
+            } catch (IOException ex) {
+                server.stop();
+                throw ex;
+            }
+        }
+        client = new CluelessClient(username, address, port);
+        client.addMessageHandler(gameFrame);
+        client.addConnectionEventListener(gameFrame);
+        try {
+            client.start();
+        } catch (UnknownHostException ex) {
+            client.stop();
+            throw ex;
+        } catch (IOException ex) {
+            client.stop();
+            throw ex;
+        }
+    }
+
+    public void shutdown() {
+        if (client != null) {
+            client.stop();
+        }
+        if (server != null) {
+            server.stop();
+        }
+    }
+
+    public String toString() {
+        String str = "Player: " + username + " Position: " + position;
+        return str;
+    }
 
 }
