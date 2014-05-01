@@ -219,6 +219,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 String suggestedPerson = (String)msg.getField("person");
                 String suggestedWeapon = (String)msg.getField("weapon");
                 String suggestedRoom = (String) msg.getField("roomroom");// "?"; //todo(naugler) how do i get the suggested room?
+
                 for (Card card : cardsInHand) {
                     if (card.getName().equalsIgnoreCase(suggestedPerson) ||
                             card.getName().equalsIgnoreCase(suggestedWeapon) ||
@@ -229,8 +230,10 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 Card response = null;
                 if (cardsToShow.isEmpty()) {
                 	JOptionPane.showMessageDialog(this, "You were asked to refute suggestion but do not have any cards.");
-                	msg.setField("type", type.RESP_SUGGEST);
-                	player.getClient().send(msg);
+                	CluelessMessage message = new CluelessMessage(com.blakjack.clueless.common.CluelessMessage.Type.RESP_SUGGEST);
+                	message = CluelessMessage.copy(message, msg, "type");
+//                	msg.setField("type", com.blakjack.clueless.common.CluelessMessage.Type.RESP_SUGGEST);
+                	player.getClient().send(message);
                     //todo(naugler)show dialog?
                 } else {
                     response = (Card)JOptionPane.showInputDialog(this, 
@@ -244,16 +247,19 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	player.respondToSuggestion(response, msg);
                 break;
             case RESP_SUGGEST:
-            	Card c = (Card)msg.getField("card");
-            	if (c != null)
-            	{
-            		JOptionPane.showMessageDialog(this, "Someone Showed you the card " + c.getName() + 
-            				". Once you hit OK, you will not be able to view the card anymore.");
-            	}
-            	// Show resulting card if card exists and this user made suggestion
+            	Card c = (Card) msg.getField("card");
+				if (c != null) {
+					JOptionPane.showMessageDialog(
+									this,
+									"Someone Showed you the card "
+											+ c.getName()
+											+ ". Once you hit OK, you will not be able to view the card anymore.");
+					buttonPad.setAllEnabled(false);
+					buttonPad.setBtnEnabled("ACCUSE", true);
+					buttonPad.setBtnEnabled("ENDTURN", true);
+				}
 
-//            	//THe suggest method will be called on the suggest button
-//            	userEngine.makeSuggestion(person, weapon);
+
             	break;
             case MOVE:
             	Object object = msg.getField("buttons");
@@ -307,6 +313,9 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	buttonPad.setRoomForSug((String ) msg.getField("roomroom"));
             	
             	break;
+            case CLEARLOG:
+                log.setText("");
+                break;
             default:
                 log("Unknown message: " + msg);
         }

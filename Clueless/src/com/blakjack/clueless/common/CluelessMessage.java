@@ -29,13 +29,33 @@ public class CluelessMessage implements Serializable {
         RESP_SUGGEST, // responce to suggestion
         UPDATE,      //contains the entire game state
         ACCUSE,
-        SET_PLAYER  // Tell the player what character the player is 
+        SET_PLAYER,  // Tell the player what character the player is 
+        CLEARLOG
     }
     
     private final Map<String, Serializable> fields = new HashMap<String, Serializable>();
     
     public CluelessMessage(Type type) {
         setField("type", type);
+    }
+    
+    public static CluelessMessage copy(CluelessMessage newMessage, CluelessMessage msg, String...exclusions){
+    	for (String key : msg.getFields().keySet())
+    	{
+    		boolean excluded = false;
+    		for (String exclude : exclusions)
+    		{
+    			if (key.equals(exclude))
+    			{
+    				excluded = true;
+    			}
+    		}
+    		if (!excluded)
+    		{
+    			newMessage.setField(key, (Serializable) msg.getField(key));
+    		}
+    	}
+    	return newMessage;
     }
     
     public Map<String, Serializable> getFields() {
