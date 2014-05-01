@@ -41,7 +41,7 @@ public class Player implements Serializable {
     }
 
     public enum Character {
-
+         //should change the positions to board.get____Start()
         MUSTARD("Colonel Mustard", Color.yellow, 9, board.getLounge().getDown()), 
         WHITE("Mrs. White", Color.white, 23, board.getKitchen().getLeft()), 
         PLUM("Professor Plum", new Color(127, 0, 255), 5, board.getStudy().getDown()), // Purple

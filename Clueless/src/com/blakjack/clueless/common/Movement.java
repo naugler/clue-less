@@ -13,6 +13,7 @@ public class Movement
          else return true;
          
       }
+     
       
       
       //shortcut move is always valid for corners
@@ -160,5 +161,5 @@ public class Movement
                return emptyhall;
          }  
       }
-	
+   
 }

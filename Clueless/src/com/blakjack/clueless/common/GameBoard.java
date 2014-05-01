@@ -26,13 +26,30 @@ public class GameBoard
    private Room hallHB = new Room();
    private Room hallBB = new Room();
 
+   //create starting rooms
+   private Room scarletStart = new Room("Miss Scarlet's Chamber");
+   private Room mustardStart = new Room("Colonel Mustard's Apartment");
+   private Room whiteStart = new Room("Mrs. White's Wing");
+   private Room greenStart = new Room("Mr. Green's Annex");
+   private Room peacockStart = new Room("Mrs. Peacock's Studio");
+   private Room plumStart = new Room("Professor Plum's Flat");
+   
    public GameBoard()
    {
       connectRooms();
+         //connect starting rooms
    }
    
    private void connectRooms()
    {
+      //connect starting places
+      scarletStart.setDown(hallHL);
+      mustardStart.setLeft(hallLD);
+      whiteStart.setUp(hallBK);
+      greenStart.setUp(hallCB);
+      peacockStart.setRight(hallLC);
+      plumStart.setRight(hallSL);
+    
       //connect rooms
       connectSC(study, kitchen);
       connectSC(lounge, conservatory);
@@ -107,5 +124,23 @@ public class GameBoard
    public Room getKitchen()
    {  return kitchen;   }
    
+   
+   public Room getScarletStart()
+   {  return scarletStart; }
+   
+   public Room getMustardStart()
+   {  return mustardStart; }
+   
+   public Room getWhiteStart()
+   {  return whiteStart;   }
+   
+   public Room getGreenStart()
+   {  return greenStart;   }
+   
+   public Room getPeacockStart()
+   {  return peacockStart; }
+   
+   public Room getPlumStart()
+   {  return plumStart; }
    
 }
