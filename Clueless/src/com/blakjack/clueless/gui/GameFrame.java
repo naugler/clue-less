@@ -128,8 +128,6 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         add(centerPanel, BorderLayout.CENTER);
         
         JPanel rightPanel = new JPanel(new BorderLayout());
-//        rightPanel.add(playerPanel, BorderLayout.NORTH);
-//        rightPanel.add(gameBoard, BorderLayout.CENTER);
         rightPanel.add(new EvidenceLocker(), BorderLayout.NORTH);
         rightPanel.add(cardPanel, BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);
@@ -323,7 +321,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         if (gameStatus != null)
         {
             gameBoard.setPlayerPositions(gameStatus);
-            playersPanel.setPlayers(gameStatus);
+            playersPanel.setPlayers(gameStatus, (int)msg.getField("turn"));
         }
         gameBoard.repaint();
         

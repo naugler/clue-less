@@ -6,7 +6,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -37,20 +39,27 @@ public class GameBoardPanel extends JPanel {
         arg0.drawImage(gameboard.getImage(), 0, 0, null);
         
         if (currentPlayers != null) {
+            Map<Integer, Integer> positionCounts = new HashMap<Integer, Integer>();
+            
             int boardWidth = gameboard.getIconWidth() - 2*MARGINS;
             int boardHeight = gameboard.getIconHeight() - 2*MARGINS;
             int tileWidth = boardWidth / 5;
             int tileHeight = boardHeight / 5;
             for (Player key : currentPlayers) {
             	int pos = key.getPosition();
+                int playersHere = 0;
+                if (positionCounts.containsKey(pos)) {
+                    playersHere = positionCounts.get(pos);
+                }
+                positionCounts.put(pos, ++playersHere);
                 int tileX = pos%5;
                 int tileY = pos/5;
                 
                 //draw the piece!
                 int width = (int)(tileWidth*PIECE_TILE_RATIO);
                 int height = (int)(tileHeight*PIECE_TILE_RATIO);
-                int x = tileX*tileWidth+(tileWidth-width)/2+MARGINS;
-                int y = tileY*tileHeight+(tileHeight-height)/2+MARGINS;
+                int x = tileX*tileWidth+(tileWidth-width)/2+MARGINS+(playersHere*3);
+                int y = tileY*tileHeight+(tileHeight-height)/2+MARGINS+(playersHere*3);
                 arg0.setColor(key.getCharacter().getColor());
                 arg0.fillOval(x, y, width, height);
                 arg0.setColor(Color.BLACK);

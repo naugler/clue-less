@@ -8,6 +8,7 @@ package com.blakjack.clueless.gui;
 
 import com.blakjack.clueless.common.Player;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.Collection;
@@ -24,7 +25,9 @@ public class PlayersPanel extends JPanel {
     
     private static class PlayerPanel extends JPanel {
         
-        public PlayerPanel(Player player) {
+        public PlayerPanel(Player player, boolean turn) {
+            Dimension size = new Dimension(90, 60);
+            setPreferredSize(size);
             setLayout(new BorderLayout());
             
             setBorder(new MatteBorder(3, 3, 3, 3, player.getCharacter().getColor()));
@@ -32,6 +35,11 @@ public class PlayersPanel extends JPanel {
             add(character, BorderLayout.NORTH);
             JLabel userName = new JLabel(player.getUsername(), JLabel.CENTER);
             add(userName, BorderLayout.CENTER);
+            if (turn) {
+                JLabel turnLabel = new JLabel("IN TURN", JLabel.CENTER);
+                turnLabel.setForeground(Color.red);
+                add(turnLabel, BorderLayout.SOUTH);
+            }
         }
         
     }
@@ -45,15 +53,21 @@ public class PlayersPanel extends JPanel {
         setBorder(border);
     }
     
-    public void setPlayers(Collection<Player> players) {
+    public void setPlayers(Collection<Player> players, int turn) {
         removeAll();
         setLayout(new FlowLayout(FlowLayout.CENTER));
+        int count = turn;
         for (Player player : players) {
             System.out.println("adding player");
-            add(new PlayerPanel(player));
+            add(new PlayerPanel(player, count == 0));
+            --count;
         }
         revalidate();
         repaint();
+    }
+    
+    public void setTurn(int turn) {
+        
     }
     
 }

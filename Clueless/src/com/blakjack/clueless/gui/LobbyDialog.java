@@ -118,7 +118,7 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
                             for (Player player : gameStatus) {
                                 String username = player.getUsername();
                                 String character = player.getCharacter().getName();
-                                playerModel.addRow(new Object[]{count+1, username, character, "Ready"});
+                                playerModel.addRow(new Object[]{++count, username, character, "Ready"});
                             }
                             startButton.setEnabled(gameStatus.size() > 2);
                         }
