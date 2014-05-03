@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -63,6 +64,8 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         initializeComponents();
         pack();
         setMaximumSize(getSize());
+        
+        setIconImage(new ImageIcon(getClass().getClassLoader().getResource("suggestBtn.png")).getImage());
     }
 
     private void initializeComponents() {
@@ -82,8 +85,6 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             @Override
             public void actionPerformed(ActionEvent e) {
                 connect(false);
-                //get options.
-//                userEngine.suggest();
             }
         });
         fileMenu.add(joinGame);
@@ -98,10 +99,10 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         fileMenu.add(exitGame);
 
         MenuItem about = new MenuItem("About");
-        exitGame.addActionListener(new ActionListener() {
+        about.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //TODO(naugler)
+                new AboutDialog(GameFrame.this).setVisible(true);
             }
         });
         helpMenu.add(about);
@@ -147,7 +148,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     }
 
     private void waitInLobby(boolean startServer) {
-        LobbyDialog lobby = new LobbyDialog(startServer, player);
+        LobbyDialog lobby = new LobbyDialog(this, startServer, player);
         player.getClient().addMessageHandler(lobby);
 
         CluelessMessage login = new CluelessMessage(CluelessMessage.Type.LOGIN);
@@ -218,22 +219,22 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 List<Card> cardsToShow = new ArrayList<Card>();
                 String suggestedPerson = (String)msg.getField("person");
                 String suggestedWeapon = (String)msg.getField("weapon");
-                String suggestedRoom = (String) msg.getField("roomroom");// "?"; //todo(naugler) how do i get the suggested room?
+                String suggestedRoom = (String) msg.getField("roomroom");
 
                 for (Card card : cardsInHand) {
                     if (card.getName().equalsIgnoreCase(suggestedPerson) ||
-                            card.getName().equalsIgnoreCase(suggestedWeapon) ||
-                            card.getName().equalsIgnoreCase(suggestedRoom)) {
+                        card.getName().equalsIgnoreCase(suggestedWeapon) ||
+                        card.getName().equalsIgnoreCase(suggestedRoom)) {
                         cardsToShow.add(card);
                     }
                 }
                 Card response = null;
                 if (cardsToShow.isEmpty()) {
-                	JOptionPane.showMessageDialog(this, "You were asked to refute suggestion but do not have any cards.");
-                	CluelessMessage message = new CluelessMessage(com.blakjack.clueless.common.CluelessMessage.Type.RESP_SUGGEST);
-                	message = CluelessMessage.copy(message, msg, "type");
+                    JOptionPane.showMessageDialog(this, "You were asked to refute suggestion but do not have any cards.");
+                    CluelessMessage message = new CluelessMessage(com.blakjack.clueless.common.CluelessMessage.Type.RESP_SUGGEST);
+                    message = CluelessMessage.copy(message, msg, "type");
 //                	msg.setField("type", com.blakjack.clueless.common.CluelessMessage.Type.RESP_SUGGEST);
-                	player.getClient().send(message);
+                    player.getClient().send(message);
                     //todo(naugler)show dialog?
                 } else {
                     response = (Card)JOptionPane.showInputDialog(this, 
@@ -248,18 +249,16 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 break;
             case RESP_SUGGEST:
             	Card c = (Card) msg.getField("card");
-				if (c != null) {
-					JOptionPane.showMessageDialog(
-									this,
-									"Someone Showed you the card "
-											+ c.getName()
-											+ ". Once you hit OK, you will not be able to view the card anymore.");
-					buttonPad.setAllEnabled(false);
-					buttonPad.setBtnEnabled("ACCUSE", true);
-					buttonPad.setBtnEnabled("ENDTURN", true);
-				}
-
-
+                if (c != null) {
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Someone Showed you the card "
+                                    + c.getName()
+                                    + ". Once you hit OK, you will not be able to view the card anymore.");
+                        buttonPad.setAllEnabled(false);
+                        buttonPad.setBtnEnabled("ACCUSE", true);
+                        buttonPad.setBtnEnabled("ENDTURN", true);
+                }
             	break;
             case MOVE:
             	Object object = msg.getField("buttons");
@@ -267,18 +266,18 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	buttonPad.setAllEnabled(false);
             	if (object instanceof List)
             	{
-            		butons = (List<String>) object;
+                    butons = (List<String>) object;
             	}
             	for (String button : butons)
             	{
-            		if (!button.equals("UP") && !button.equals("DOWN") && !button.equals("LEFT") && !button.equals("RIGHT") && !button.equals("SECRET"))
-            		{
-            			buttonPad.setBtnEnabled(button, true);
-            		}
-            		else
-            		{
-            			buttonPad.setBtnEnabled(button, false);
-            		}
+                    if (!button.equals("UP") && !button.equals("DOWN") && !button.equals("LEFT") && !button.equals("RIGHT") && !button.equals("SECRET"))
+                    {
+                            buttonPad.setBtnEnabled(button, true);
+                    }
+                    else
+                    {
+                            buttonPad.setBtnEnabled(button, false);
+                    }
             	}
             	buttonPad.setRoomForSug((String ) msg.getField("roomroom"));
             	
@@ -302,13 +301,11 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 });
             	Object obj = msg.getField("buttons");
             	List<String> buttons = null;
-            	if (obj instanceof List)
-            	{
-            		buttons = (List<String>) obj;
+            	if (obj instanceof List) {
+                    buttons = (List<String>) obj;
             	}
-            	for (String button : buttons)
-            	{
-            		buttonPad.setBtnEnabled(button, true);
+            	for (String button : buttons) {
+                    buttonPad.setBtnEnabled(button, true);
             	}
             	buttonPad.setRoomForSug((String ) msg.getField("roomroom"));
             	
@@ -321,7 +318,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         }
         if (gameStatus != null)
         {
-        	gameBoard.setPlayerPositions(gameStatus);
+            gameBoard.setPlayerPositions(gameStatus);
         }
         gameBoard.repaint();
         

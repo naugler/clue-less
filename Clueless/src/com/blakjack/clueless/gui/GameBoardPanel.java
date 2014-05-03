@@ -1,6 +1,7 @@
 package com.blakjack.clueless.gui;
 
 import com.blakjack.clueless.common.Player;
+import java.awt.Color;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -51,6 +52,8 @@ public class GameBoardPanel extends JPanel {
                 int y = tileY*tileHeight+(tileHeight-height)/2+MARGINS;
                 arg0.setColor(key.getCharacter().getColor());
                 arg0.fillOval(x, y, width, height);
+                arg0.setColor(Color.BLACK);
+                arg0.drawOval(x, y, width, height);
             }
         }
     }

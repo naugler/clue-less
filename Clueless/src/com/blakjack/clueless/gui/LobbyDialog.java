@@ -12,6 +12,7 @@ import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Player;
 
 import java.awt.BorderLayout;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -40,7 +41,9 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
     private final boolean startServer;
     private final Player player;
     
-    public LobbyDialog(boolean startServer, Player client) {
+    public LobbyDialog(Frame owner, boolean startServer, Player client) {
+        super(owner);
+        setLocationRelativeTo(owner);
         setTitle("Game Lobby");
         this.startServer = startServer;
         this.player = client;
