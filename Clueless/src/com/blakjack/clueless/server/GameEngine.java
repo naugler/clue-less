@@ -491,7 +491,9 @@ public class GameEngine implements Connection.MessageHandler,
             buttons.add("SECRET");
         }
         // TODO: need to check for suggestion
-        buttons.add("SUGGEST");
+        if (Movement.isSuggestValid(gameboard, player)) {
+            buttons.add("SUGGEST");
+        }
         // Once it is a persons turn they can accuse until they hit end turn
         buttons.add("ENDTURN");
         buttons.add("ACCUSE");
