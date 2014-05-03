@@ -48,7 +48,8 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     private final Player player = new Player("");
     private final ButtonPad buttonPad = new ButtonPad(player);
 //    private static GameBoardStatus gameStatus = new GameBoardStatus();
-    private final GameBoardPanel gameBoard = new GameBoardPanel();;
+    private final GameBoardPanel gameBoard = new GameBoardPanel();
+    private final PlayersPanel playersPanel = new PlayersPanel();
     /**
      * @param args the command line arguments
      */
@@ -111,24 +112,27 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         bar.add(fileMenu);
         bar.add(helpMenu);
         this.setMenuBar(bar);
-        
-        PlayerPanel playerPanel = new PlayerPanel();
-//        add(playerPanel, BorderLayout.NORTH);
 
         JPanel leftPanel = new JPanel(new BorderLayout());
         log("Welcome to Clue-Less!");
         log.setEditable(false);
         log.setPreferredSize(new Dimension(100, 200));
-        leftPanel.add(log, BorderLayout.NORTH);
-        leftPanel.add(buttonPad, BorderLayout.CENTER);
-        leftPanel.add(cardPanel, BorderLayout.SOUTH);
+        leftPanel.add(log, BorderLayout.CENTER);
+        leftPanel.add(buttonPad, BorderLayout.SOUTH);
+//        leftPanel.add(cardPanel, BorderLayout.SOUTH);
         add(leftPanel, BorderLayout.WEST);
         
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(playersPanel, BorderLayout.NORTH);
+        centerPanel.add(gameBoard, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
+        
         JPanel rightPanel = new JPanel(new BorderLayout());
-        rightPanel.add(playerPanel, BorderLayout.NORTH);
-        rightPanel.add(gameBoard, BorderLayout.CENTER);
-        rightPanel.add(new EvidenceLocker(), BorderLayout.EAST);
-        add(rightPanel, BorderLayout.CENTER);
+//        rightPanel.add(playerPanel, BorderLayout.NORTH);
+//        rightPanel.add(gameBoard, BorderLayout.CENTER);
+        rightPanel.add(new EvidenceLocker(), BorderLayout.NORTH);
+        rightPanel.add(cardPanel, BorderLayout.CENTER);
+        add(rightPanel, BorderLayout.EAST);
     }
 
     private void connect(boolean startServer) {
@@ -168,13 +172,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
     @Override
     public void handle(Connection connection, CluelessMessage msg) {
         CluelessMessage.Type type = (CluelessMessage.Type) msg.getField("type");
-        List<Player> temp = (List<Player>) msg.getField("status");
-        List<Player> gameStatus = null;
-        if (temp != null)
-        {
-        	System.out.println(temp);
-        	gameStatus = temp;
-        }
+        List<Player> gameStatus = (List<Player>) msg.getField("status");
         switch (type) {
             case ERROR:
                 JOptionPane.showMessageDialog(this, msg.getField("error"), "Error", JOptionPane.ERROR_MESSAGE);
@@ -325,6 +323,7 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         if (gameStatus != null)
         {
             gameBoard.setPlayerPositions(gameStatus);
+            playersPanel.setPlayers(gameStatus);
         }
         gameBoard.repaint();
         

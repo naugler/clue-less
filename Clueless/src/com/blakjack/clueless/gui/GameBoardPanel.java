@@ -21,7 +21,8 @@ public class GameBoardPanel extends JPanel {
     
     public GameBoardPanel() {
         gameboard = new ImageIcon(getClass().getClassLoader().getResource("gameboard.png"));
-        setPreferredSize(new Dimension(gameboard.getIconWidth(), gameboard.getIconHeight()));
+        //I don't know why this +20 is required, but it is?
+        setPreferredSize(new Dimension(gameboard.getIconWidth()+20, gameboard.getIconHeight()));
     }
 
     // Gameboard image never changes we just need the pixel offsets

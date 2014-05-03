@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -58,14 +59,14 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
             }
         });
         
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        
     }
     
     private void initComponents() {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                System.out.println("lobby closed");
-                super.windowClosed(e);
                 close();
             }
         });
@@ -111,15 +112,15 @@ public class LobbyDialog extends JDialog implements Connection.MessageHandler {
                             playerModel.removeRow(i);
                         }
                         //add all players in update
-                        for (int i = 0; i < 6; ++i) {
-                            String username = (String)msg.getField("player"+i+"username");
-                            if (username != null) {
-                                String character = (String)msg.getField("player"+i+"character");
-                                playerModel.addRow(new Object[]{i+1, username, character, "Ready"});
-                                if (i > 1) {
-                                    startButton.setEnabled(true);
-                                }
+                        List<Player> gameStatus = (List<Player>) msg.getField("status");
+                        if (gameStatus != null) {
+                            int count = 0;
+                            for (Player player : gameStatus) {
+                                String username = player.getUsername();
+                                String character = player.getCharacter().getName();
+                                playerModel.addRow(new Object[]{count+1, username, character, "Ready"});
                             }
+                            startButton.setEnabled(gameStatus.size() > 2);
                         }
                         playerModel.fireTableDataChanged();
                     }

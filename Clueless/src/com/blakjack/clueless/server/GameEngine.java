@@ -150,14 +150,6 @@ public class GameEngine implements Connection.MessageHandler,
         }
         msg.setField("status", (Serializable) usersCopy);
         int turn = playerTurnIndex;
-        int count = 0;
-        for (Player u : users) {
-            msg.setField("player" + count + "username", u.getUsername());
-            msg.setField("player" + count + "character", u.getCharacter()
-                    .getName());
-            msg.setField("player" + count + "position", u.getPosition());
-            ++count;
-        }
         msg.setField("turn", turn);
 
         return msg;

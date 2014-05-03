@@ -29,13 +29,15 @@ public class CardDetailPanel extends JPanel {
     
     CardDetailPanel(Map<Card, ImageIcon> cards) {
         images = cards.values();
-        Dimension size = new Dimension((CARD_WIDTH+MARGIN)*cards.size()+MARGIN, CARD_HEIGHT+2*MARGIN);
+        //omg math
+        Dimension size = new Dimension((CARD_WIDTH+MARGIN)*cards.size()+MARGIN, 
+                CARD_HEIGHT+2*MARGIN);
         setPreferredSize(size);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g); //To change body of generated methods, choose Tools | Templates.
+        super.paintComponent(g);
         
         Graphics2D g2 = (Graphics2D)g;
         int count = 0;

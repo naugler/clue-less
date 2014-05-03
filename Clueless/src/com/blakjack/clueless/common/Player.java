@@ -106,6 +106,7 @@ public class Player implements Serializable {
     }
 
     public Player(Player p) {
+        this.username = p.getUsername();
         this.cards = p.getCards();
         this.character = p.getCharacter();
         this.position = p.getPosition();
