@@ -16,8 +16,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.blakjack.clueless.common.SquareTile;
-
 import java.util.Date;
 
 public class GameEngine implements Connection.MessageHandler,
@@ -29,7 +27,6 @@ public class GameEngine implements Connection.MessageHandler,
     // List<UserEngine> users = new ArrayList<UserEngine>();
     List<Player> users = Collections.synchronizedList(new ArrayList<Player>());
     List<Character> availChars = new ArrayList<>();
-    private static SquareTile[] gameboard = new SquareTile[NUM_SQUARES];
     private static GameBoard board = new GameBoard();
     private static Deck deck = new Deck();
     // This index determines the players turn, the integer refers to the index
@@ -47,9 +44,6 @@ public class GameEngine implements Connection.MessageHandler,
             availChars.add(p);
         }
 
-        for (int i = 0; i < NUM_SQUARES; i++) {
-            gameboard[i] = new SquareTile(i);
-        }
         // Set Crime - crime will be the first three cards of the deck in the
         // order, character, weapon, room
         deck.sort(); // People, weapons, rooms
@@ -285,7 +279,6 @@ public class GameEngine implements Connection.MessageHandler,
             System.out.println("IN Game Engine first time!!");
             // Get the room that the current player is in.
             Player currPlayer = users.get(playerTurnIndex);
-            String rooms = gameboard[currPlayer.getPosition()].getRoom();
             String roomroom = currPlayer.getRoom().getName();
             String charcter = (String) msg.getField("person");
             String weapon = (String) msg.getField("weapon");
@@ -300,7 +293,6 @@ public class GameEngine implements Connection.MessageHandler,
                 message.setField(key, (Serializable) msg.getField(key));
 
             }
-            message.setField("room", rooms);
             message.setField("roomroom", roomroom);
 
             // make sure to move the player who is the character to the room
@@ -475,23 +467,23 @@ public class GameEngine implements Connection.MessageHandler,
         // tell next player that it is their turn
         // tell game frame which moves are valid
         List<String> buttons = new LinkedList<>();
-        if (Movement.isDownValid(gameboard, users, player)) {
+        if (Movement.isDownValid(board, users, player)) {
             buttons.add("DOWN");
         }
-        if (Movement.isLeftValid(gameboard, users, player)) {
+        if (Movement.isLeftValid(board, users, player)) {
             buttons.add("LEFT");
         }
-        if (Movement.isRightValid(gameboard, users, player)) {
+        if (Movement.isRightValid(board, users, player)) {
             buttons.add("RIGHT");
         }
-        if (Movement.isUpValid(gameboard, users, player)) {
+        if (Movement.isUpValid(board, users, player)) {
             buttons.add("UP");
         }
-        if (Movement.isShortcutValid(gameboard, player)) {
+        if (Movement.isShortcutValid(board, player)) {
             buttons.add("SECRET");
         }
         // TODO: need to check for suggestion
-        if (Movement.isSuggestValid(gameboard, player)) {
+        if (Movement.isSuggestValid(board, player)) {
             buttons.add("SUGGEST");
         }
         // Once it is a persons turn they can accuse until they hit end turn

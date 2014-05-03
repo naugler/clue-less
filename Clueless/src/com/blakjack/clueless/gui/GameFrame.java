@@ -111,6 +111,9 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         bar.add(fileMenu);
         bar.add(helpMenu);
         this.setMenuBar(bar);
+        
+        PlayerPanel playerPanel = new PlayerPanel();
+//        add(playerPanel, BorderLayout.NORTH);
 
         JPanel leftPanel = new JPanel(new BorderLayout());
         log("Welcome to Clue-Less!");
@@ -120,9 +123,12 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
         leftPanel.add(buttonPad, BorderLayout.CENTER);
         leftPanel.add(cardPanel, BorderLayout.SOUTH);
         add(leftPanel, BorderLayout.WEST);
-        add(gameBoard, BorderLayout.CENTER);
-
-        add(new EvidenceLocker(), BorderLayout.EAST);
+        
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.add(playerPanel, BorderLayout.NORTH);
+        rightPanel.add(gameBoard, BorderLayout.CENTER);
+        rightPanel.add(new EvidenceLocker(), BorderLayout.EAST);
+        add(rightPanel, BorderLayout.CENTER);
     }
 
     private void connect(boolean startServer) {
