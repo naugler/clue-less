@@ -141,8 +141,10 @@ public class Connection {
     
     public void send(Serializable msg) {
         try {
-            writer.writeObject(msg);
-            writer.flush();
+            synchronized(writer) {
+                writer.writeObject(msg);
+                writer.flush();
+            }
         } catch (IOException ex) {
             System.err.println("Failed to write object "+msg);
             ex.printStackTrace(System.err);
