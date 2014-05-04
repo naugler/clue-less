@@ -254,7 +254,6 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             case RESP_SUGGEST:
             	Card c = (Card) msg.getField("card");
             	String uName = (String) msg.getField("name");
-            	buttonPad.setAllEnabled(false);
 				if (c != null) {
 					JOptionPane.showMessageDialog(
 									this,
@@ -264,6 +263,13 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
 					
 					buttonPad.setBtnEnabled("ACCUSE", true);
 					buttonPad.setBtnEnabled("ENDTURN", true);
+				}
+				String mssg = (String)msg.getField("message");
+				if (mssg != null)
+				{
+				    JOptionPane.showMessageDialog(this, mssg);
+				    buttonPad.setBtnEnabled("ACCUSE", true);
+                    buttonPad.setBtnEnabled("ENDTURN", true);
 				}
 
 

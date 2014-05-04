@@ -219,6 +219,10 @@ public class GameEngine implements Connection.MessageHandler,
         String character = (String) msg.getField("person");
         String weapon = (String) msg.getField("weapon");
         String room = (String) msg.getField("room");
+        
+        CluelessMessage message = new CluelessMessage(Type.MESSAGE);
+        message.setField("message", users.get(playerTurnIndex).getUsername() + " is accusing: \n" + character + " in the " + room + "\nwith the "+ weapon);
+        broadcast(message);
         Card charact = Card.getCard(character);
         Card weap = Card.getCard(weapon);
         Card rm = Card.getCard(room);
@@ -259,6 +263,10 @@ public class GameEngine implements Connection.MessageHandler,
         case ACCUSE:
             // check if the user won
             boolean won = checkAccuse(msg);
+            if (!won)
+            {
+                users.get(playerTurnIndex).setActive(false);
+            }
             message = new CluelessMessage(Type.ACCUSE);
             message = CluelessMessage.copy(message, msg, "type");
             message.setField("win", won);
@@ -319,6 +327,12 @@ public class GameEngine implements Connection.MessageHandler,
                     }
                 }
             }
+            if (!refuted)
+            {
+                message = new CluelessMessage(Type.RESP_SUGGEST);
+                message.setField("message", "No one could refute your suggestion");
+                currPlayer.getConnection().send(message);
+            }
             
             break;
         case RESP_SUGGEST:
@@ -361,7 +375,7 @@ public class GameEngine implements Connection.MessageHandler,
 
             }
             synchronized (this) {
-                this.notifyAll();
+                this.notify();
             }
             break;
         case MOVE:
@@ -463,6 +477,8 @@ public class GameEngine implements Connection.MessageHandler,
         // tell next player that it is their turn
         // tell game frame which moves are valid
         List<String> buttons = new LinkedList<>();
+        if (player.getActive())
+        {
         if (Movement.isDownValid(board, users, player)) {
             buttons.add("DOWN");
         }
@@ -482,9 +498,11 @@ public class GameEngine implements Connection.MessageHandler,
         if (Movement.isSuggestValid(board, player)) {
             buttons.add("SUGGEST");
         }
+        buttons.add("ACCUSE");
+        }
         // Once it is a persons turn they can accuse until they hit end turn
         buttons.add("ENDTURN");
-        buttons.add("ACCUSE");
+        
         return buttons;
     }
 

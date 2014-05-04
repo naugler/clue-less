@@ -31,6 +31,7 @@ public class Player implements Serializable {
     private transient List<Card> cards = new ArrayList<Card>();
     private transient CluelessServer server;
     private transient CluelessClient client;
+    private transient boolean active = true;
 
     public Room getRoom() {
         return room;
@@ -156,6 +157,16 @@ public class Player implements Serializable {
     public void setPosition(int pos) {
         position = pos;
     }
+    
+    public boolean getActive()
+    {
+        return active;
+    }
+    
+    public void setActive(boolean active)
+    {
+        this.active = active;
+    }
 
     public void makeSuggestion(String person, String weapon) {
         System.out.println("In UserEngine  Person = " + person + " weapon = " + weapon);
@@ -186,8 +197,9 @@ public class Player implements Serializable {
         {
             Card c = Card.getCard(card.getName());
             message.setField("card", c);
+            sendToServer(message);
         }
-        sendToServer(message);
+        
     }
 
     /*

@@ -72,6 +72,7 @@ public class ButtonPad extends JPanel {
                         JOptionPane.OK_CANCEL_OPTION);
                 if (retval == JOptionPane.OK_OPTION) {
                     System.out.println("Button pressed by this player");
+                    setAllEnabled(false);
                     player.makeSuggestion(suggestionPanel.getPerson().getName(), 
                             suggestionPanel.getWeapon().getName());
                 }
@@ -96,6 +97,8 @@ public class ButtonPad extends JPanel {
                     player.accuse(accusationPanel.getPerson().getName(), 
                             accusationPanel.getWeapon().getName(), 
                             accusationPanel.getRoom().getName());
+                    setAllEnabled(false);
+                    setBtnEnabled("ENDTURN", true);
                 }
             }
         });
