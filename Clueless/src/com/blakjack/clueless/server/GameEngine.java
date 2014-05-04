@@ -308,8 +308,6 @@ public class GameEngine implements Connection.MessageHandler,
                 Player suggPlayer = users
                         .get((playerTurnIndex + offsetToSuggestTo)
                                 % users.size());
-                System.out.println("Asking suggested Player "
-                        + suggPlayer.getUsername());
                 System.out.println(message);
                 suggPlayer.getConnection().send(message);
                 synchronized (this) {
@@ -321,12 +319,7 @@ public class GameEngine implements Connection.MessageHandler,
                     }
                 }
             }
-            // if (offsetToSuggestTo < 6)
-            // {
-            // UserEngine suggPlayer = users.get((playerTurnIndex +
-            // offsetToSuggestTo)%6);
-            // suggPlayer.getPlayer().getConnection().send(msg);
-            // }
+            
             break;
         case RESP_SUGGEST:
             Card card = (Card) msg.getField("card");
@@ -346,7 +339,10 @@ public class GameEngine implements Connection.MessageHandler,
             // Send the rest of the players the results. (without the card)
             else {
                 refuted = true;
-                users.get(playerTurnIndex).getConnection().send(msg);
+                message = new CluelessMessage(Type.RESP_SUGGEST);
+                message = CluelessMessage.copy(message, msg, "type");
+                message.setField("name", users.get((playerTurnIndex + offsetToSuggestTo) % users.size()).getUsername());
+                users.get(playerTurnIndex).getConnection().send(message);
                 message = new CluelessMessage(Type.MESSAGE);
                 // for (String key : msg.getFields().keySet())
                 // {
@@ -413,9 +409,14 @@ public class GameEngine implements Connection.MessageHandler,
             // room will be set.
             message.setField("roomroom", curPlayer.getRoom().getName());
             curPlayer.getConnection().send(message);
+            
+            message = new CluelessMessage(Type.MESSAGE);
+            message.setField("message", curPlayer.getUsername() + " moved to the " + curPlayer.getRoom().getName()+ " room.");
+            broadcast(message);
 
             break;
         case END_TURN:
+            Player currentPlayer = users.get(playerTurnIndex);
             playerTurnIndex = (playerTurnIndex + 1) % users.size();
             if (clearLog) {
                 message = new CluelessMessage(Type.CLEARLOG);
@@ -434,7 +435,10 @@ public class GameEngine implements Connection.MessageHandler,
             // the user is currently in
             message.setField("roomroom", nextPlayer.getRoom().getName());
             nextPlayer.getConnection().send(message);
-
+            
+            message = new CluelessMessage(Type.MESSAGE);
+            message.setField("message", currentPlayer.getUsername() + "'s turn is over.\nIt is now " + nextPlayer.getUsername() + "'s turn." );
+            broadcast(message);
         default:
             CluelessMessage error = new CluelessMessage(Type.ERROR);
             error.setField("error", "Unknown message type " + type);

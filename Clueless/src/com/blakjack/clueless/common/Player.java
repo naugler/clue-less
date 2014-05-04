@@ -176,12 +176,17 @@ public class Player implements Serializable {
 
     public void respondToSuggestion(Card card, CluelessMessage msg) {
         CluelessMessage message = new CluelessMessage(Type.RESP_SUGGEST);
+        
 //        for (String key : msg.getFields().keySet()) {
 //            if (!key.equals("type")) {
 //                message.setField(key, (Serializable) msg.getField(key));
 //            }
 //        }
-        message.setField("card", card);
+        if (card != null)
+        {
+            Card c = Card.getCard(card.getName());
+            message.setField("card", c);
+        }
         sendToServer(message);
     }
 

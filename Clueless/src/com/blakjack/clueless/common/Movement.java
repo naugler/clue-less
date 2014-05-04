@@ -36,8 +36,9 @@ public class Movement
             {
                Room j = playerList.get(i).getRoom();
                if (j == room)
-                  valid = false;
+                  return false;
             }
+            return true;
          }
         return valid; 
       }

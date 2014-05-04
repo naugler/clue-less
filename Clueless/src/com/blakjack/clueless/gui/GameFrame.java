@@ -194,20 +194,22 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
             	break;
             case MESSAGE:
                 //TODO(naugler) messaging?
-                log(msg.getField("source") + ": " + msg.getField("message"));
+                log((String)msg.getField("message"));
                 break;
             case UPDATE:
                 handleUpdate(msg);
                 break;
             case ACCUSE:
             	boolean won = (boolean) msg.getField("win");
+            	String name = (String) msg.getField("name");
             	if (won)
             	{
-            		JOptionPane.showMessageDialog(this, "SOMEONE Won the game!!!!!");// Show appropriate message
+            		JOptionPane.showMessageDialog(this, name + " won the game!!!!!");// Show appropriate message
+            		buttonPad.setAllEnabled(false);
             	}
             	else
             	{
-            		JOptionPane.showMessageDialog(this, "Someone lost the game!!!");
+            		JOptionPane.showMessageDialog(this, name + " lost the game!!!");
             		// Show appropriate message
             	}
             	// Do something to exit
@@ -251,16 +253,20 @@ public class GameFrame extends JFrame implements MessageHandler, ConnectionEvent
                 break;
             case RESP_SUGGEST:
             	Card c = (Card) msg.getField("card");
-                if (c != null) {
-                        JOptionPane.showMessageDialog(
-                                this,
-                                "Someone Showed you the card "
-                                    + c.getName()
-                                    + ". Once you hit OK, you will not be able to view the card anymore.");
-                        buttonPad.setAllEnabled(false);
-                        buttonPad.setBtnEnabled("ACCUSE", true);
-                        buttonPad.setBtnEnabled("ENDTURN", true);
-                }
+            	String uName = (String) msg.getField("name");
+            	buttonPad.setAllEnabled(false);
+				if (c != null) {
+					JOptionPane.showMessageDialog(
+									this,
+									uName + " showed you the card "
+											+ c.getName()
+											+ ". Once you hit OK, you will not be able to view the card anymore.");
+					
+					buttonPad.setBtnEnabled("ACCUSE", true);
+					buttonPad.setBtnEnabled("ENDTURN", true);
+				}
+
+
             	break;
             case MOVE:
             	Object object = msg.getField("buttons");
