@@ -9,6 +9,7 @@ import com.blakjack.clueless.common.CluelessMessage.Type;
 import com.blakjack.clueless.common.Connection;
 import com.blakjack.clueless.common.Connection.ConnectionEvent;
 import com.blakjack.clueless.common.Player.Character;
+import java.awt.Color;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -105,10 +106,8 @@ public class GameEngine implements Connection.MessageHandler,
         }
         player.setUsername(username);
         player.setConnection(connection);
-        player.setPosition(player.getCharacter().getHomePos());
         player.setRoom(player.getCharacter().getHomeRoom());
         // We know that the character is unique so we can do this
-        // -1 is starting position
 
         addPlayer(player);
     }
@@ -299,7 +298,7 @@ public class GameEngine implements Connection.MessageHandler,
             int index = getPlayerFromCharacter(Character.getCharacter(charcter));
             if (index != -1) {
                 users.get(index).setRoom(currPlayer.getRoom());
-                users.get(index).setPosition(currPlayer.getPosition());
+//                users.get(index).setPosition(currPlayer.getPosition());
                 CluelessMessage m = new CluelessMessage(Type.MESSAGE);
                 m.setField("message", users.get(index).getUsername()
                         + " was sent to the " + roomroom
@@ -383,35 +382,35 @@ public class GameEngine implements Connection.MessageHandler,
             String direction = (String) msg.getField("direction");
             System.out.println("in GAME ENGINE direction " + direction);
             Player curPlayer = users.get(playerTurnIndex);
-            int currPos = curPlayer.getPosition();
-            int newPos = currPos;
+//            int currPos = curPlayer.getPosition();
+//            int newPos = currPos;
             // If move is allowed for current player
             // TODO: Do CHECK HERE
             switch (direction) {
             case "UP":
                 // the check for if it is possible happens before we set
                 // position
-                newPos = currPos - 5;
+//                newPos = currPos - 5;
                 curPlayer.setRoom(curPlayer.getRoom().getUp());
                 break;
             case "DOWN":
-                newPos = currPos + 5;
+//                newPos = currPos + 5;
                 curPlayer.setRoom(curPlayer.getRoom().getDown());
                 break;
             case "LEFT":
-                newPos = currPos - 1;
+//                newPos = currPos - 1;
                 curPlayer.setRoom(curPlayer.getRoom().getLeft());
                 break;
             case "RIGHT":
-                newPos = currPos + 1;
+//                newPos = currPos + 1;
                 curPlayer.setRoom(curPlayer.getRoom().getRight());
                 break;
             case "SECRET":
-                newPos = Math.abs(currPos - 24);
+//                newPos = Math.abs(currPos - 24);
                 curPlayer.setRoom(curPlayer.getRoom().getShortcut());
                 break;
             }
-            curPlayer.setPosition(newPos);
+//            curPlayer.setPosition(newPos);
 
             List<String> btns = getEnabledButtons(curPlayer);
 

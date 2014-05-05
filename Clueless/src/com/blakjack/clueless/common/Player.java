@@ -19,10 +19,8 @@ public class Player implements Serializable {
     private final Character character;
 
     private String username;
-    // for Room class, if we use it
     private static final transient GameBoard board = new GameBoard();
-    private transient Room room;
-    private int position;
+    private Room room;
 
     // transient means it will not be sent over the wire. This way we can
     // use this class to send to everybody without worrying about accidentally
@@ -42,24 +40,21 @@ public class Player implements Serializable {
     }
 
     public enum Character {
-         //should change the positions to board.get____Start()
-        MUSTARD("Colonel Mustard", Color.yellow, 9, board.getLounge().getDown()), 
-        WHITE("Mrs. White", Color.white, 23, board.getKitchen().getLeft()), 
-        PLUM("Professor Plum", new Color(127, 0, 255), 5, board.getStudy().getDown()), // Purple
-        PEACOCK("Mrs. Peacock", Color.blue, 15, board.getLibrary().getDown()), 
-        GREEN("Mr. Green", Color.green, 21, board.getBallroom().getLeft()), 
-        SCARLET("Miss Scarlet", Color.red, 3, board.getLounge().getLeft());
+        MUSTARD("Colonel Mustard", Color.yellow, board.getMustardStart()), 
+        WHITE("Mrs. White", Color.white, board.getWhiteStart()), 
+        PLUM("Professor Plum", new Color(127, 0, 255), board.getPlumStart()),
+        PEACOCK("Mrs. Peacock", Color.blue, board.getPeacockStart()), 
+        GREEN("Mr. Green", Color.green, board.getGreenStart()), 
+        SCARLET("Miss Scarlet", Color.red, board.getScarletStart());
 
-        private Character(String name, Color color, int homePos, Room homeRoom) {
+        private Character(String name, Color color, Room homeRoom) {
             this.charName = name;
             this.color = color;
-            this.homePos = homePos;
             this.homeRoom = homeRoom;
         }
 
         private final Color color;
         private final String charName;
-        private final int homePos;
         private final Room homeRoom;
 
         public String getName() {
@@ -68,10 +63,6 @@ public class Player implements Serializable {
 
         public Color getColor() {
             return color;
-        }
-
-        public int getHomePos() {
-            return homePos;
         }
         
         public Room getHomeRoom() {
@@ -110,7 +101,6 @@ public class Player implements Serializable {
         this.username = p.getUsername();
         this.cards = p.getCards();
         this.character = p.getCharacter();
-        this.position = p.getPosition();
         this.room = p.getRoom();
     }
 
@@ -149,22 +139,12 @@ public class Player implements Serializable {
     public List<Card> getCards() {
         return cards;
     }
-
-    public int getPosition() {
-        return position;
-    }
-
-    public void setPosition(int pos) {
-        position = pos;
-    }
     
-    public boolean getActive()
-    {
+    public boolean getActive() {
         return active;
     }
     
-    public void setActive(boolean active)
-    {
+    public void setActive(boolean active) {
         this.active = active;
     }
 
@@ -188,13 +168,7 @@ public class Player implements Serializable {
     public void respondToSuggestion(Card card, CluelessMessage msg) {
         CluelessMessage message = new CluelessMessage(Type.RESP_SUGGEST);
         
-//        for (String key : msg.getFields().keySet()) {
-//            if (!key.equals("type")) {
-//                message.setField(key, (Serializable) msg.getField(key));
-//            }
-//        }
-        if (card != null)
-        {
+        if (card != null) {
             Card c = Card.getCard(card.getName());
             message.setField("card", c);
             sendToServer(message);
@@ -228,9 +202,6 @@ public class Player implements Serializable {
     }
 
     public void connect(boolean startServer, int port, String address, String username, GameFrame gameFrame) throws IOException, UnknownHostException {
-		  //TODO: Maybe here????
-//		  this.username = username;
-        //TODO(naugler) validate login parameters
         if (startServer) {
             server = new CluelessServer(port);
             try {
@@ -263,8 +234,9 @@ public class Player implements Serializable {
         }
     }
 
+    @Override
     public String toString() {
-        String str = "Player: " + username + " Position: " + position;
+        String str = "Player: " + username + " Room: " + room;
         return str;
     }
 

@@ -44,7 +44,6 @@ public class CardPanel extends JPanel {
         setToolTipText("Click for more detail!");
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseClicked(MouseEvent e) {
                 JOptionPane.showMessageDialog(CardPanel.this,
@@ -54,17 +53,6 @@ public class CardPanel extends JPanel {
             }
             
         });
-        
-        //just some in-place testing
-        setCards(new ArrayList<Card>() {{
-            add(Card.BALLROOM);
-            add(Card.BILLIARD);
-            add(Card.CANDLESTICK);
-            add(Card.CONSERVATORY);
-            add(Card.DAGGER);
-            add(Card.DININGROOM);
-        }});
-        
     }
     
     public void setCards(List<Card> newCards) {

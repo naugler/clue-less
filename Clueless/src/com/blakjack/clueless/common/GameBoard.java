@@ -44,11 +44,17 @@ public class GameBoard
    {
       //connect starting places
       scarletStart.setDown(hallHL);
+      scarletStart.setHome(true);
       mustardStart.setLeft(hallLD);
+      mustardStart.setHome(true);
       whiteStart.setUp(hallBK);
+      whiteStart.setHome(true);
       greenStart.setUp(hallCB);
+      greenStart.setHome(true);
       peacockStart.setRight(hallLC);
+      peacockStart.setHome(true);
       plumStart.setRight(hallSL);
+      plumStart.setHome(true);
     
       //connect rooms
       connectSC(study, kitchen);
